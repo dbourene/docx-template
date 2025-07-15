@@ -1,0 +1,23 @@
+{
+  "name": "kinjo-docx-generator",
+  "version": "1.0.0",
+  "description": "Générateur de documents .docx pour Kinjo Energy Platform",
+  "main": "scripts/generateContrat.js",
+  "type": "module",
+  "scripts": {
+    "generate:contrat": "node scripts/generateContrat.js",
+    "generate:consentement": "node scripts/generateConsentement.js",
+    "test": "node scripts/test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "docx-templates": "^4.14.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["docx", "template", "supabase", "kinjo"],
+  "author": "Kinjo Energy Platform",
+  "license": "MIT"
+}
