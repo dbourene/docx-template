@@ -7,12 +7,12 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/generate', async (req, res) => {
-  const { contratId, consommateurId, producteurId, installationId } = req.body;
+  const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
 
   try {
-    const fileBuffer = await generateContrat(contratId, consommateurId, producteurId, installationId);
+    const fileBuffer = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', `attachment; filename=contrat-${contratId}.docx`);
+    res.setHeader('Content-Disposition', `attachment; filename=contrat-${contrat_id}.docx`);
     res.send(fileBuffer);
   } catch (error) {
     console.error('Erreur génération contrat :', error);
