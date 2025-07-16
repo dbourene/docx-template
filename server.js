@@ -10,7 +10,7 @@ app.post('/generate', async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
 
   try {
-    const fileBuffer = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
+    const fileBuffer = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id); 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename=contrat-${contrat_id}.docx`);
     res.send(fileBuffer);
