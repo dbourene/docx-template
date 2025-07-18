@@ -1,1 +1,3 @@
 node_modules/
+# Ne pas versionner les fichiers temporaires
+/temp/
