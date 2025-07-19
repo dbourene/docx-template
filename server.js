@@ -52,28 +52,72 @@ app.post('/generate', async (req, res) => {
     const docxPath = path.join(__dirname, `temp/contrat-${contrat_id}.docx`);
     const pdfPath = path.join(__dirname, `temp/contrat-${contrat_id}.pdf`);
 
+    console.log('🔍 DIAGNOSTIC: Vérification du buffer...');
+    console.log('📦 Type de rawBuffer:', typeof rawBuffer);
+    console.log('📦 rawBuffer est un Buffer?', Buffer.isBuffer(rawBuffer));
+    console.log('📦 rawBuffer est un Uint8Array?', rawBuffer instanceof Uint8Array);
+    console.log('📦 Taille rawBuffer:', rawBuffer?.length);
+
     // Vérifier que le buffer existe
     if (!rawBuffer) {
+      console.error('❌ ERREUR: Aucun buffer retourné par generateContrat');
       throw new Error('Aucun buffer retourné par generateContrat');
     }
 
-    // Transforme l'objet JSON-isé en vrai Buffer
-    const buffer = Buffer.isBuffer(rawBuffer) ? rawBuffer : Buffer.from(rawBuffer.data);
+    // Correction: Gestion correcte des différents types de buffer
+    let buffer;
+    if (Buffer.isBuffer(rawBuffer)) {
+      buffer = rawBuffer;
+      console.log('✅ Buffer déjà correct');
+    } else if (rawBuffer instanceof Uint8Array) {
+      buffer = Buffer.from(rawBuffer);
+      console.log('✅ Uint8Array converti en Buffer');
+    } else if (rawBuffer.data && Array.isArray(rawBuffer.data)) {
+      buffer = Buffer.from(rawBuffer.data);
+      console.log('✅ Array data converti en Buffer');
+    } else {
+      console.error('❌ Type de buffer non reconnu:', rawBuffer);
+      throw new Error('Type de buffer non supporté');
+    }
     
     console.log('📦 Buffer final pour écriture:', buffer.length, 'bytes');
+    
+    // Vérifier que le dossier temp existe
+    const tempDir = path.dirname(docxPath);
+    if (!fs.existsSync(tempDir)) {
+      console.log('📁 Création du dossier temp:', tempDir);
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    console.log('💾 Écriture du fichier .docx:', docxPath);
     fs.writeFileSync(docxPath, buffer);
+    
+    // Vérifier que le fichier a bien été créé
+    if (!fs.existsSync(docxPath)) {
+      throw new Error('Fichier .docx non créé sur le disque');
+    }
+    
+    const fileStats = fs.statSync(docxPath);
+    console.log('✅ Fichier .docx créé:', docxPath, 'Taille:', fileStats.size, 'bytes');
 
 
     // 2. Convertir .docx → .pdf (utilise LibreOffice en ligne de commande)
     console.log('🔄 Starting LibreOffice conversion...');
+    const conversionCommand = `libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`;
+    console.log('⚙️ Commande LibreOffice:', conversionCommand);
+    
     await new Promise((resolve, reject) => {
-      exec(`libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`, (err, stdout, stderr) => {
+      exec(conversionCommand, (err, stdout, stderr) => {
         if (err) {
-          console.error('Erreur conversion LibreOffice:', stderr);
+          console.error('❌ Erreur conversion LibreOffice:', stderr);
+          console.error('❌ Code erreur:', err.code);
           reject(err);
         } else {
           console.log('✅ LibreOffice command completed');
-          console.log('stdout:', stdout);
+          console.log('📋 stdout:', stdout);
+          if (stderr) {
+            console.log('⚠️ stderr:', stderr);
+          }
           resolve();
         }
       });
@@ -81,6 +125,10 @@ app.post('/generate', async (req, res) => {
 
     // 2.5. Wait for PDF file to be created
     await waitForPdfFile(pdfPath);
+    
+    // Vérifier la taille du PDF créé
+    const pdfStats = fs.statSync(pdfPath);
+    console.log('✅ PDF créé:', pdfPath, 'Taille:', pdfStats.size, 'bytes');
 
     // 3. Charger le PDF et ajouter une signature visuelle avec pdf-lib
     console.log('📖 Loading PDF file...');
@@ -103,6 +151,10 @@ app.post('/generate', async (req, res) => {
     // Retourner les informations du fichier généré (comme /convert)
     const pdfFileName = `CPV_${contrat_id}.pdf`;
     
+    console.log('🎉 SUCCÈS: Contrat généré avec succès');
+    console.log('📄 Fichier .docx:', docxPath, 'existe:', fs.existsSync(docxPath));
+    console.log('📄 Fichier .pdf:', pdfPath, 'existe:', fs.existsSync(pdfPath));
+    
     res.status(200).json({
       success: true,
       fileName: pdfFileName,
@@ -110,8 +162,13 @@ app.post('/generate', async (req, res) => {
     });
 
     // 5. Nettoyage (optionnel mais recommandé)
-    fs.unlinkSync(docxPath);
-    fs.unlinkSync(pdfPath);
+    console.log('🧹 Nettoyage des fichiers temporaires...');
+    if (fs.existsSync(docxPath)) {
+      fs.unlinkSync(docxPath);
+    }
+    if (fs.existsSync(pdfPath)) {
+      fs.unlinkSync(pdfPath);
+    }
 
   } catch (error) {
     console.error('❌ Erreur génération contrat :', error);
