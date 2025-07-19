@@ -100,9 +100,14 @@ app.post('/generate', async (req, res) => {
     const modifiedPdfBytes = await pdfDoc.save();
 
     // 4. Répondre au client avec le PDF signé
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=contrat-${contrat_id}.pdf`);
-    res.send(modifiedPdfBytes);
+    // Retourner les informations du fichier généré (comme /convert)
+    const pdfFileName = `CPV_${contrat_id}.pdf`;
+    
+    res.status(200).json({
+      success: true,
+      fileName: pdfFileName,
+      message: 'Contrat généré et converti en PDF avec succès'
+    });
 
     // 5. Nettoyage (optionnel mais recommandé)
     fs.unlinkSync(docxPath);
@@ -114,6 +119,136 @@ app.post('/generate', async (req, res) => {
   }
 });
 
+import { createClient } from '@supabase/supabase-js';
+
+// Nouveau endpoint
+app.post('/convert', async (req, res) => {
+  const { contratId } = req.body;
+  if (!contratId) {
+    return res.status(400).json({ error: 'contratId manquant' });
+  }
+
+  console.log('🔄 Début conversion PDF pour contrat:', contratId);
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY // 👈 Important : autorisation RLS
+  );
+
+  // Créer le dossier temp si besoin
+  const tempDir = path.join(__dirname, 'temp');
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  const docxPath = path.join(__dirname, `temp/contrat-${contratId}.docx`);
+  const pdfPath = path.join(__dirname, `temp/contrat-${contratId}.pdf`);
+
+  try {
+    // 1. Trouver le fichier .docx dans le bucket 'contrats'
+    console.log('🔍 Recherche du fichier .docx dans le bucket contrats...');
+    
+    const { data: files, error: listError } = await supabase.storage
+      .from('contrats')
+      .list('consommateurs', {
+        search: `contrat-${contratId}`
+      });
+
+    if (listError) {
+      throw new Error(`Erreur recherche fichier: ${listError.message}`);
+    }
+
+    const docxFile = files?.find(file => file.name.includes(`contrat-${contratId}`) && file.name.endsWith('.docx'));
+    
+    if (!docxFile) {
+      throw new Error(`Fichier .docx non trouvé pour le contrat ${contratId}`);
+    }
+
+    const docxStoragePath = `consommateurs/${docxFile.name}`;
+    console.log('✅ Fichier .docx trouvé:', docxStoragePath);
+
+    // 2. Télécharger le .docx depuis Supabase Storage
+    console.log('⬇️ Téléchargement du .docx...');
+    const { data: docxData, error: downloadError } = await supabase.storage
+      .from('contrats')
+      .download(docxStoragePath);
+
+    if (downloadError) {
+      throw new Error(`Erreur téléchargement .docx: ${downloadError.message}`);
+    }
+
+    // 3. Sauvegarder temporairement le .docx
+    const arrayBuffer = await docxData.arrayBuffer();
+    fs.writeFileSync(docxPath, Buffer.from(arrayBuffer));
+    console.log('✅ Fichier .docx sauvegardé temporairement');
+
+    // 4. Convertir .docx → .pdf avec LibreOffice
+    console.log('🔄 Conversion .docx → .pdf...');
+    await new Promise((resolve, reject) => {
+      exec(`libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`, (err, stdout, stderr) => {
+        if (err) {
+          console.error('❌ Erreur LibreOffice:', stderr);
+          return reject(err);
+        }
+        console.log('✅ Conversion LibreOffice terminée');
+        resolve();
+      });
+    });
+
+    // 5. Attendre que le PDF soit créé
+    await waitForPdfFile(pdfPath);
+
+    // 6. Lire le PDF généré
+    console.log('📖 Lecture du PDF généré...');
+    const pdfBuffer = fs.readFileSync(pdfPath);
+    console.log('✅ PDF lu, taille:', pdfBuffer.length, 'bytes');
+
+    // 7. Uploader le PDF dans le bucket 'contrats', dossier 'consommateurs'
+    const pdfFileName = docxFile.name.replace('.docx', '.pdf');
+    const pdfUploadPath = `consommateurs/${pdfFileName}`;
+    
+    console.log('⬆️ Upload PDF vers:', pdfUploadPath);
+    
+    const { error: uploadError } = await supabase.storage
+      .from('contrats')
+      .upload(pdfUploadPath, pdfBuffer, {
+      contentType: 'application/pdf',
+      upsert: true
+    });
+
+    if (uploadError) {
+      console.error('❌ Erreur upload PDF:', uploadError);
+      throw new Error('Erreur upload PDF vers Supabase');
+    }
+
+    // 8. Générer l'URL publique
+    const { data: urlData } = supabase.storage
+      .from('contrats')
+      .getPublicUrl(pdfUploadPath);
+
+    console.log('✅ PDF uploadé avec succès:', urlData.publicUrl);
+
+    res.status(200).json({
+      success: true,
+      fileName: pdfFileName,
+      url: urlData.publicUrl
+    });
+
+    // 9. Nettoyage des fichiers temporaires
+    fs.unlinkSync(docxPath);
+    fs.unlinkSync(pdfPath);
+    console.log('🧹 Fichiers temporaires supprimés');
+    
+  } catch (error) {
+    console.error('❌ Erreur endpoint /convert:', error);
+    res.status(500).json({
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
+// Démarrer le serveur
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur le port ${PORT}`);
