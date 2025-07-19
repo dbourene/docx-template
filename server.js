@@ -122,11 +122,12 @@ app.post('/generate', async (req, res) => {
     console.log('📦 Résultat generateContrat:', Object.keys(result));
     console.log('📦 Taille du buffer:', result.buffer?.length);
     console.log('📦 Taille du docxBuffer:', result.docxBuffer?.length);
+    
+    const rawBuffer = result.buffer || result.docxBuffer;
     console.log('📦 Type du rawBuffer:', typeof rawBuffer);
     console.log('📦 Est-ce un Buffer?', Buffer.isBuffer(rawBuffer));
     console.log('📦 Est-ce un Uint8Array?', rawBuffer instanceof Uint8Array);
     
-    const rawBuffer = result.buffer || result.docxBuffer; // récupère buffer depuis l'objet retourné
     const docxPath = path.join(__dirname, `temp/contrat-${contrat_id}.docx`);
     const pdfPath = path.join(__dirname, `temp/contrat-${contrat_id}.pdf`);
 
@@ -138,8 +139,17 @@ app.post('/generate', async (req, res) => {
       throw new Error('Aucun buffer retourné par generateContrat');
     }
 
-    // Convertir Uint8Array en Buffer
-    const buffer = Buffer.isBuffer(rawBuffer) ? rawBuffer : Buffer.from(rawBuffer);
+    // Convertir Uint8Array en Buffer si nécessaire
+    let buffer;
+    if (Buffer.isBuffer(rawBuffer)) {
+      buffer = rawBuffer;
+    } else if (rawBuffer instanceof Uint8Array) {
+      buffer = Buffer.from(rawBuffer);
+    } else if (rawBuffer && rawBuffer.data) {
+      buffer = Buffer.from(rawBuffer.data);
+    } else {
+      throw new Error('Format de buffer non reconnu');
+    }
     
     console.log('📦 Buffer final pour écriture:', buffer.length, 'bytes');
     console.log('💾 Écriture du fichier .docx...');
@@ -235,7 +245,6 @@ app.post('/generate', async (req, res) => {
     fs.unlinkSync(pdfPath);
     console.log('🧹 Fichiers temporaires supprimés');
     
-    const totalTime = Date.now() - Date.parse(new Date().toISOString());
     console.log(`🎉 Processus complet terminé`);
 
   } catch (error) {
@@ -406,9 +415,9 @@ app.post('/convert', async (req, res) => {
     const { error: uploadError } = await supabase.storage
       .from('contrats')
       .upload(pdfUploadPath, pdfBuffer, {
-      contentType: 'application/pdf',
-      upsert: true
-    });
+        contentType: 'application/pdf',
+        upsert: true
+      });
 
     if (uploadError) {
       console.error('❌ Erreur upload PDF:', uploadError);
