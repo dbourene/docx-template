@@ -184,12 +184,12 @@ import { createClient } from '@supabase/supabase-js';
 
 // Endpoint pour convertir un .docx existant en PDF
 app.post('/convert', async (req, res) => {
-  const { contratId } = req.body;
-  if (!contratId) {
-    return res.status(400).json({ error: 'contratId manquant' });
+  const { contrat_id } = req.body;
+  if (!contrat_id) {
+    return res.status(400).json({ error: 'contrat_id manquant' });
   }
 
-  console.log('🔄 Début conversion PDF pour contrat:', contratId);
+  console.log('🔄 Début conversion PDF pour contrat:', contrat_id);
 
   const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -202,8 +202,8 @@ app.post('/convert', async (req, res) => {
     fs.mkdirSync(tempDir, { recursive: true });
   }
 
-  const docxPath = path.join(tempDir, `contrat-${contratId}.docx`);
-  const pdfPath = path.join(tempDir, `contrat-${contratId}.pdf`);
+  const docxPath = path.join(tempDir, `contrat-${contrat_id}.docx`);
+  const pdfPath = path.join(tempDir, `contrat-${contrat_id}.pdf`);
 
   try {
     // 1. Trouver le fichier .docx dans le bucket 'contrats'
@@ -212,17 +212,17 @@ app.post('/convert', async (req, res) => {
     const { data: files, error: listError } = await supabase.storage
       .from('contrats')
       .list('consommateurs', {
-        search: `contrat-${contratId}`
+        search: `contrat-${contrat_id}`
       });
 
     if (listError) {
       throw new Error(`Erreur recherche fichier: ${listError.message}`);
     }
 
-    const docxFile = files?.find(file => file.name.includes(`contrat-${contratId}`) && file.name.endsWith('.docx'));
-    
+    const docxFile = files?.find(file => file.name.includes(`contrat-${contrat_id}`) && file.name.endsWith('.docx'));
+
     if (!docxFile) {
-      throw new Error(`Fichier .docx non trouvé pour le contrat ${contratId}`);
+      throw new Error(`Fichier .docx non trouvé pour le contrat ${contrat_id}`);
     }
 
     const docxStoragePath = `consommateurs/${docxFile.name}`;
