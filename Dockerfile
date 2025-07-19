@@ -18,5 +18,8 @@ RUN npm install
 # Étape 6 : Définition du port (si tu utilises 10000)
 EXPOSE 10000
 
-# Étape 7 : Lancement de ton serveur Node.js
+# Etape 7  : Création du dossier temporaire pour stocker les fichiers générés
+RUN mkdir -p /app/temp
+
+# Étape 8 : Lancement de ton serveur Node.js
 CMD ["npm", "start"]
