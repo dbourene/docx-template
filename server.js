@@ -8,6 +8,13 @@ import { exec } from 'child_process';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { generateContrat } from './scripts/generateContrat.js';
 
+
+const tempDir = path.join(process.cwd(), 'temp');
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir);
+  console.log('📁 Dossier temp créé');
+}
+
 // Vérification de la disponibilité de LibreOffice au lancement
 // Ceci est important pour s'assurer que le binaire est accessible avant de démarrer le serveur
 exec('libreoffice --version', (err, stdout, stderr) => {
