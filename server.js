@@ -8,12 +8,21 @@ import { exec } from 'child_process';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { generateContrat } from './scripts/generateContrat.js';
 
+// Vérification de la disponibilité de LibreOffice au lancement
+// Ceci est important pour s'assurer que le binaire est accessible avant de démarrer le serveur
 exec('libreoffice --version', (err, stdout, stderr) => {
   if (err) {
     console.error('❌ LibreOffice non dispo au lancement :', stderr || err.message);
   } else {
     console.log('✅ LibreOffice version détectée au lancement :', stdout);
   }
+});
+
+// Log explicite pour vérifier le binaire LibreOffice - temporaire
+exec('which libreoffice', (err, stdout, stderr) => {
+  if (stdout) console.log('✅ LibreOffice binaire situé ici :', stdout.trim());
+  if (stderr) console.log('⚠️ LibreOffice stderr which :', stderr);
+  if (err) console.error('❌ LibreOffice non trouvé dans PATH');
 });
 
 const app = express();
@@ -67,6 +76,12 @@ app.post('/generate', async (req, res) => {
 
     // Chemins des fichiers
     const tempDir = path.join(__dirname, 'temp');
+
+    // Créer le dossier temp s'il n'existe pas
+    const tempFiles = fs.readdirSync(tempDir);
+    console.log('📁 Contenu du dossier temp après conversion:', tempFiles);
+
+
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
       console.log('📁 Dossier temp créé:', tempDir);
