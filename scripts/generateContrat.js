@@ -180,7 +180,8 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
       success: true,
       fileName,
       url: urlData.publicUrl,
-      buffer: report
+      buffer: report,  // report est déjà un Buffer depuis createReport()
+      docxBuffer: report  // Alias pour compatibilité avec server.js
     };
 
   } catch (error) {
