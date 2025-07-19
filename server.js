@@ -43,6 +43,7 @@ app.post('/generate', async (req, res) => {
     const result = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
     
     // Debug: vérifier ce qui est retourné
+    console.log('✅ Résultat génération contrat:', result);
     console.log('📦 Résultat generateContrat:', Object.keys(result));
     console.log('📦 Taille du buffer:', result.buffer?.length);
     console.log('📦 Taille du docxBuffer:', result.docxBuffer?.length);
