@@ -1,22 +1,29 @@
-# Utilise une image de base avec Node + LibreOffice
+# Étape 1 : Image Ubuntu
 FROM ubuntu:22.04
 
-# Installe Node.js
-RUN apt-get update && apt-get install -y curl gnupg2 software-properties-common
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install -y nodejs
+# Étape 2 : Installation de Node.js et LibreOffice
+RUN apt-get update && apt-get install -y \
+  curl \
+  gnupg2 \
+  software-properties-common \
+  fonts-dejavu \
+  libreoffice \
+  libreoffice-writer \
+  && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+  && apt-get install -y nodejs \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Installe LibreOffice en mode headless
-RUN apt-get install -y libreoffice libreoffice-writer
-
-# Crée le dossier de ton app
+# Étape 3 : Création du dossier de l'application
 WORKDIR /usr/src/app
 
-# Copie ton projet
+# Étape 4 : Copie des fichiers
 COPY . .
 
-# Installe les dépendances
+# Étape 5 : Installation des dépendances Node.js
 RUN npm install
 
-# Lancer ton app
+# Étape 6 : Exposition du port (utile pour Render)
+EXPOSE 3001
+
+# Étape 7 : Lancement de l’application
 CMD ["npm", "start"]
