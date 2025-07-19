@@ -103,3 +103,12 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur le port ${PORT}`);
 });
+
+// Vérifier si LibreOffice est installé - emporaire à effacer une fois que tout est stable
+exec('libreoffice --version', (err, stdout, stderr) => {
+  if (err) {
+    console.error('❌ LibreOffice non disponible :', stderr);
+  } else {
+    console.log('✅ LibreOffice version :', stdout);
+  }
+});
