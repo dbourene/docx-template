@@ -14,7 +14,6 @@ app.use(express.json());
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-
 // Function to wait for PDF file to be created
 async function waitForPdfFile(pdfPath, maxRetries = 10, delayMs = 500) {
   for (let i = 0; i < maxRetries; i++) {
@@ -40,49 +39,40 @@ app.post('/generate', async (req, res) => {
       fs.mkdirSync(tempDir, { recursive: true });
     }
 
-
-    console.log('📄 Génération du contrat...');
     // 1. Générer le fichier .docx
     const result = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
-    const { buffer: rawBuffer } = result; // récupère buffer depuis l'objet retourné
+    
+    // Debug: vérifier ce qui est retourné
+    console.log('📦 Résultat generateContrat:', Object.keys(result));
+    console.log('📦 Taille du buffer:', result.buffer?.length);
+    console.log('📦 Taille du docxBuffer:', result.docxBuffer?.length);
+    
+    const rawBuffer = result.buffer || result.docxBuffer; // récupère buffer depuis l'objet retourné
     const docxPath = path.join(__dirname, `temp/contrat-${contrat_id}.docx`);
     const pdfPath = path.join(__dirname, `temp/contrat-${contrat_id}.pdf`);
 
+    // Vérifier que le buffer existe
+    if (!rawBuffer) {
+      throw new Error('Aucun buffer retourné par generateContrat');
+    }
+
     // Transforme l'objet JSON-isé en vrai Buffer
     const buffer = Buffer.isBuffer(rawBuffer) ? rawBuffer : Buffer.from(rawBuffer.data);
-    fs.writeFileSync(docxPath, buffer);
-
-    console.log(`✅ Fichier DOCX généré : ${docxPath}`);
     
+    console.log('📦 Buffer final pour écriture:', buffer.length, 'bytes');
+    fs.writeFileSync(docxPath, buffer);
 
 
     // 2. Convertir .docx → .pdf (utilise LibreOffice en ligne de commande)
     console.log('🔄 Starting LibreOffice conversion...');
-    
-    // Vérifier si LibreOffice est installé - emporaire à effacer une fois que tout est stable
-    exec('libreoffice --version', (err, stdout, stderr) => {
-      if (err) {
-        console.error('❌ LibreOffice non disponible :', stderr);
-      } else {
-        console.log('✅ LibreOffice version :', stdout);
-      }
-    });
-
-    // Exécuter la commande de conversion
-    console.log(`🔍 Commande exécutée : libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`);
-
-    
-    console.log('🔄 Starting LibreOffice conversion...');
     await new Promise((resolve, reject) => {
       exec(`libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`, (err, stdout, stderr) => {
-        console.log('📤 LibreOffice STDOUT:', stdout);
-        console.error('📥 LibreOffice STDERR:', stderr);
-
         if (err) {
-          console.error('❌ Erreur exécution LibreOffice :', err);
+          console.error('Erreur conversion LibreOffice:', stderr);
           reject(err);
         } else {
-          console.log('✅ Conversion LibreOffice terminée');
+          console.log('✅ LibreOffice command completed');
+          console.log('stdout:', stdout);
           resolve();
         }
       });
@@ -117,9 +107,7 @@ app.post('/generate', async (req, res) => {
     fs.unlinkSync(docxPath);
     fs.unlinkSync(pdfPath);
 
-  } 
-  
-  catch (error) {
+  } catch (error) {
     console.error('❌ Erreur génération contrat :', error);
     res.status(500).send('Erreur génération ou signature contrat');
   }
