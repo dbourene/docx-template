@@ -1,3 +1,5 @@
+
+// This file is part of the Kinjo Energy Platform project.
 {
   "name": "kinjo-docx-generator",
   "version": "1.0.0",
@@ -7,7 +9,6 @@
   "scripts": {
     "generate:contrat": "node scripts/generateContrat.js",
     "start": "node server.js",
-    "postinstall": "chmod +x install-libreoffice.sh && ./install-libreoffice.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
@@ -29,3 +30,4 @@
   "author": "Kinjo Energy Platform",
   "license": "MIT"
 }
+
