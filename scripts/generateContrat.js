@@ -179,7 +179,8 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
     return {
       success: true,
       fileName,
-      url: urlData.publicUrl
+      url: urlData.publicUrl,
+      buffer: report
     };
 
   } catch (error) {
