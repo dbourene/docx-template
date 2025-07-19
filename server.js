@@ -40,12 +40,13 @@ app.post('/generate', async (req, res) => {
     }
 
     // 1. Générer le fichier .docx
-    const fileBuffer = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
+    const result = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
+    const { buffer: rawBuffer } = result; // récupère buffer depuis l'objet retourné
     const docxPath = path.join(__dirname, `temp/contrat-${contrat_id}.docx`);
     const pdfPath = path.join(__dirname, `temp/contrat-${contrat_id}.pdf`);
 
-    // Convert the result to Buffer if it's not already
-    const buffer = Buffer.isBuffer(fileBuffer) ? fileBuffer : Buffer.from(fileBuffer);
+    // Transforme l'objet JSON-isé en vrai Buffer
+    const buffer = Buffer.isBuffer(rawBuffer) ? rawBuffer : Buffer.from(rawBuffer.data);
     fs.writeFileSync(docxPath, buffer);
 
     // 2. Convertir .docx → .pdf (utilise LibreOffice en ligne de commande)
