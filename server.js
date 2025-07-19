@@ -36,13 +36,6 @@ app.post('/generate', async (req, res) => {
     console.log('🚀 Début endpoint /generate');
     console.log('📋 Paramètres reçus:', { contrat_id, consommateur_id, producteur_id, installation_id });
 
-    // Créer le dossier temp s'il n'existe pas
-    const tempDir = path.join(__dirname, 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-      console.log('📁 Dossier temp créé:', tempDir);
-    }
-
     // 1. Générer le fichier .docx
     console.log('📄 Génération du fichier .docx...');
     const result = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
@@ -65,6 +58,12 @@ app.post('/generate', async (req, res) => {
     console.log('📦 Buffer récupéré, taille:', docxBuffer.length, 'bytes');
 
     // Chemins des fichiers
+    const tempDir = path.join(__dirname, 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+      console.log('📁 Dossier temp créé:', tempDir);
+    }
+    
     const docxPath = path.join(tempDir, `contrat-${contrat_id}.docx`);
     const pdfPath = path.join(tempDir, `contrat-${contrat_id}.pdf`);
 
