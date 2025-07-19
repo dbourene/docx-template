@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "generate:contrat": "node scripts/generateContrat.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "chmod +x install-libreoffice.sh && ./install-libreoffice.sh",
+    "postinstall": "chmod +x install-libreoffice.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
