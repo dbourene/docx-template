@@ -17,3 +17,7 @@ apt-get install -y \
 libreoffice --version
 
 echo "✅ LibreOffice installé avec succès"
+
+# Log explicite
+echo "✅ LibreOffice installé"
+libreoffice --version || echo "❌ LibreOffice non disponible"
