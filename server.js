@@ -83,11 +83,7 @@ app.post('/generate', async (req, res) => {
     console.log('📦 Buffer final pour écriture:', buffer.length, 'bytes');
     
     // Vérifier que le dossier temp existe
-    const tempDir = path.dirname(docxPath);
-    if (!fs.existsSync(tempDir)) {
-      console.log('📁 Création du dossier temp:', tempDir);
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    // Le dossier temp est déjà créé au début de la fonction
     
     console.log('💾 Écriture du fichier .docx:', docxPath);
     fs.writeFileSync(docxPath, buffer);
