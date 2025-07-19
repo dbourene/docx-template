@@ -33,108 +33,100 @@ app.post('/generate', async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
 
   try {
+    console.log('🚀 Début endpoint /generate');
+    console.log('📋 Paramètres reçus:', { contrat_id, consommateur_id, producteur_id, installation_id });
+
     // Créer le dossier temp s'il n'existe pas
     const tempDir = path.join(__dirname, 'temp');
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
+      console.log('📁 Dossier temp créé:', tempDir);
     }
 
     // 1. Générer le fichier .docx
+    console.log('📄 Génération du fichier .docx...');
     const result = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
     
-    // Debug: vérifier ce qui est retourné
-    console.log('✅ Résultat génération contrat:', result);
-    console.log('📦 Résultat generateContrat:', Object.keys(result));
-    console.log('📦 Taille du buffer:', result.buffer?.length);
-    console.log('📦 Taille du docxBuffer:', result.docxBuffer?.length);
+    console.log('✅ Résultat génération contrat:', {
+      success: result.success,
+      fileName: result.fileName,
+      hasBuffer: !!result.buffer,
+      hasDocxBuffer: !!result.docxBuffer,
+      bufferSize: result.buffer?.length || result.docxBuffer?.length
+    });
     
-    const rawBuffer = result.buffer || result.docxBuffer; // récupère buffer depuis l'objet retourné
-    const docxPath = path.join(__dirname, `temp/contrat-${contrat_id}.docx`);
-    const pdfPath = path.join(__dirname, `temp/contrat-${contrat_id}.pdf`);
-
-    console.log('🔍 DIAGNOSTIC: Vérification du buffer...');
-    console.log('📦 Type de rawBuffer:', typeof rawBuffer);
-    console.log('📦 rawBuffer est un Buffer?', Buffer.isBuffer(rawBuffer));
-    console.log('📦 rawBuffer est un Uint8Array?', rawBuffer instanceof Uint8Array);
-    console.log('📦 Taille rawBuffer:', rawBuffer?.length);
-
-    // Vérifier que le buffer existe
-    if (!rawBuffer) {
-      console.error('❌ ERREUR: Aucun buffer retourné par generateContrat');
+    // Récupérer le buffer du fichier .docx
+    const docxBuffer = result.buffer || result.docxBuffer;
+    
+    if (!docxBuffer) {
       throw new Error('Aucun buffer retourné par generateContrat');
     }
 
-    // Correction: Gestion correcte des différents types de buffer
-    let buffer;
-    if (Buffer.isBuffer(rawBuffer)) {
-      buffer = rawBuffer;
-      console.log('✅ Buffer déjà correct');
-    } else if (rawBuffer instanceof Uint8Array) {
-      buffer = Buffer.from(rawBuffer);
-      console.log('✅ Uint8Array converti en Buffer');
-    } else if (rawBuffer.data && Array.isArray(rawBuffer.data)) {
-      buffer = Buffer.from(rawBuffer.data);
-      console.log('✅ Array data converti en Buffer');
-    } else {
-      console.error('❌ Type de buffer non reconnu:', rawBuffer);
-      throw new Error('Type de buffer non supporté');
-    }
-    
-    console.log('📦 Buffer final pour écriture:', buffer.length, 'bytes');
-    
-    // Vérifier que le dossier temp existe
-    // Le dossier temp est déjà créé au début de la fonction
-    
-    console.log('💾 Écriture du fichier .docx:', docxPath);
-    fs.writeFileSync(docxPath, buffer);
+    console.log('📦 Buffer récupéré, taille:', docxBuffer.length, 'bytes');
+
+    // Chemins des fichiers
+    const docxPath = path.join(tempDir, `contrat-${contrat_id}.docx`);
+    const pdfPath = path.join(tempDir, `contrat-${contrat_id}.pdf`);
+
+    console.log('📁 Chemins fichiers:');
+    console.log('  DOCX:', docxPath);
+    console.log('  PDF:', pdfPath);
+
+    // 2. Sauvegarder le fichier .docx
+    console.log('💾 Écriture du fichier .docx...');
+    fs.writeFileSync(docxPath, docxBuffer);
     
     // Vérifier que le fichier a bien été créé
     if (!fs.existsSync(docxPath)) {
       throw new Error('Fichier .docx non créé sur le disque');
     }
     
-    const fileStats = fs.statSync(docxPath);
-    console.log('✅ Fichier .docx créé:', docxPath, 'Taille:', fileStats.size, 'bytes');
+    const docxStats = fs.statSync(docxPath);
+    console.log('✅ Fichier .docx créé avec succès:');
+    console.log('  Chemin:', docxPath);
+    console.log('  Taille:', docxStats.size, 'bytes');
 
-
-    // 2. Convertir .docx → .pdf (utilise LibreOffice en ligne de commande)
-    console.log('🔄 Starting LibreOffice conversion...');
-    const conversionCommand = `libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`;
+    // 3. Convertir .docx → .pdf avec LibreOffice
+    console.log('🔄 Conversion .docx → .pdf avec LibreOffice...');
+    const conversionCommand = `libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${tempDir}"`;
     console.log('⚙️ Commande LibreOffice:', conversionCommand);
     
     await new Promise((resolve, reject) => {
       exec(conversionCommand, (err, stdout, stderr) => {
+        console.log('📋 LibreOffice stdout:', stdout);
+        if (stderr) {
+          console.log('⚠️ LibreOffice stderr:', stderr);
+        }
+        
         if (err) {
-          console.error('❌ Erreur conversion LibreOffice:', stderr);
-          console.error('❌ Code erreur:', err.code);
-          reject(err);
+          console.error('❌ Erreur conversion LibreOffice:', err);
+          reject(new Error(`Erreur LibreOffice: ${stderr || err.message}`));
         } else {
-          console.log('✅ LibreOffice command completed');
-          console.log('📋 stdout:', stdout);
-          if (stderr) {
-            console.log('⚠️ stderr:', stderr);
-          }
-          resolve();
+          console.log('✅ Commande LibreOffice terminée');
+          resolve(stdout);
         }
       });
     });
 
-    // 2.5. Wait for PDF file to be created
+    // 4. Attendre que le PDF soit créé
+    console.log('⏳ Attente de la création du fichier PDF...');
     await waitForPdfFile(pdfPath);
     
     // Vérifier la taille du PDF créé
     const pdfStats = fs.statSync(pdfPath);
-    console.log('✅ PDF créé:', pdfPath, 'Taille:', pdfStats.size, 'bytes');
+    console.log('✅ PDF créé avec succès:');
+    console.log('  Chemin:', pdfPath);
+    console.log('  Taille:', pdfStats.size, 'bytes');
 
-    // 3. Charger le PDF et ajouter une signature visuelle avec pdf-lib
-    console.log('📖 Loading PDF file...');
+    // 5. Charger le PDF et ajouter une signature visuelle
+    console.log('📖 Chargement du PDF pour signature...');
     const existingPdfBytes = fs.readFileSync(pdfPath);
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
 
-    // Exemple de signature textuelle en bas de page
-    firstPage.drawText(`Signé électroniquement par le consommateur`, {
+    // Ajouter une signature textuelle
+    firstPage.drawText(`Signé électroniquement - Contrat ${contrat_id}`, {
       x: 50,
       y: 50,
       size: 10,
@@ -142,14 +134,18 @@ app.post('/generate', async (req, res) => {
     });
 
     const modifiedPdfBytes = await pdfDoc.save();
+    console.log('✅ Signature ajoutée au PDF');
 
-    // 4. Répondre au client avec le PDF signé
-    // Retourner les informations du fichier généré (comme /convert)
+    // 6. Sauvegarder le PDF modifié
+    fs.writeFileSync(pdfPath, modifiedPdfBytes);
+    console.log('💾 PDF signé sauvegardé');
+
+    // 7. Répondre au client
     const pdfFileName = `CPV_${contrat_id}.pdf`;
     
-    console.log('🎉 SUCCÈS: Contrat généré avec succès');
-    console.log('📄 Fichier .docx:', docxPath, 'existe:', fs.existsSync(docxPath));
-    console.log('📄 Fichier .pdf:', pdfPath, 'existe:', fs.existsSync(pdfPath));
+    console.log('🎉 Contrat généré avec succès:');
+    console.log('  Fichier DOCX:', fs.existsSync(docxPath) ? 'Créé' : 'MANQUANT');
+    console.log('  Fichier PDF:', fs.existsSync(pdfPath) ? 'Créé' : 'MANQUANT');
     
     res.status(200).json({
       success: true,
@@ -157,24 +153,37 @@ app.post('/generate', async (req, res) => {
       message: 'Contrat généré et converti en PDF avec succès'
     });
 
-    // 5. Nettoyage (optionnel mais recommandé)
-    console.log('🧹 Nettoyage des fichiers temporaires...');
-    if (fs.existsSync(docxPath)) {
-      fs.unlinkSync(docxPath);
-    }
-    if (fs.existsSync(pdfPath)) {
-      fs.unlinkSync(pdfPath);
-    }
+    // 8. Nettoyage des fichiers temporaires (après un délai)
+    setTimeout(() => {
+      try {
+        if (fs.existsSync(docxPath)) {
+          fs.unlinkSync(docxPath);
+          console.log('🧹 Fichier .docx temporaire supprimé');
+        }
+        if (fs.existsSync(pdfPath)) {
+          fs.unlinkSync(pdfPath);
+          console.log('🧹 Fichier .pdf temporaire supprimé');
+        }
+      } catch (cleanupError) {
+        console.warn('⚠️ Erreur lors du nettoyage:', cleanupError.message);
+      }
+    }, 5000); // Délai de 5 secondes
 
   } catch (error) {
-    console.error('❌ Erreur génération contrat :', error);
-    res.status(500).send('Erreur génération ou signature contrat');
+    console.error('❌ Erreur génération contrat:', error);
+    console.error('❌ Stack trace:', error.stack);
+    
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.stack
+    });
   }
 });
 
 import { createClient } from '@supabase/supabase-js';
 
-// Nouveau endpoint
+// Endpoint pour convertir un .docx existant en PDF
 app.post('/convert', async (req, res) => {
   const { contratId } = req.body;
   if (!contratId) {
@@ -185,7 +194,7 @@ app.post('/convert', async (req, res) => {
 
   const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY // 👈 Important : autorisation RLS
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
   // Créer le dossier temp si besoin
@@ -194,8 +203,8 @@ app.post('/convert', async (req, res) => {
     fs.mkdirSync(tempDir, { recursive: true });
   }
 
-  const docxPath = path.join(__dirname, `temp/contrat-${contratId}.docx`);
-  const pdfPath = path.join(__dirname, `temp/contrat-${contratId}.pdf`);
+  const docxPath = path.join(tempDir, `contrat-${contratId}.docx`);
+  const pdfPath = path.join(tempDir, `contrat-${contratId}.pdf`);
 
   try {
     // 1. Trouver le fichier .docx dans le bucket 'contrats'
@@ -238,13 +247,13 @@ app.post('/convert', async (req, res) => {
     // 4. Convertir .docx → .pdf avec LibreOffice
     console.log('🔄 Conversion .docx → .pdf...');
     await new Promise((resolve, reject) => {
-      exec(`libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${path.dirname(docxPath)}"`, (err, stdout, stderr) => {
+      exec(`libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${tempDir}"`, (err, stdout, stderr) => {
         if (err) {
           console.error('❌ Erreur LibreOffice:', stderr);
           return reject(err);
         }
         console.log('✅ Conversion LibreOffice terminée');
-        resolve();
+        resolve(stdout);
       });
     });
 
@@ -265,9 +274,9 @@ app.post('/convert', async (req, res) => {
     const { error: uploadError } = await supabase.storage
       .from('contrats')
       .upload(pdfUploadPath, pdfBuffer, {
-      contentType: 'application/pdf',
-      upsert: true
-    });
+        contentType: 'application/pdf',
+        upsert: true
+      });
 
     if (uploadError) {
       console.error('❌ Erreur upload PDF:', uploadError);
@@ -288,9 +297,15 @@ app.post('/convert', async (req, res) => {
     });
 
     // 9. Nettoyage des fichiers temporaires
-    fs.unlinkSync(docxPath);
-    fs.unlinkSync(pdfPath);
-    console.log('🧹 Fichiers temporaires supprimés');
+    setTimeout(() => {
+      try {
+        if (fs.existsSync(docxPath)) fs.unlinkSync(docxPath);
+        if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
+        console.log('🧹 Fichiers temporaires supprimés');
+      } catch (cleanupError) {
+        console.warn('⚠️ Erreur nettoyage:', cleanupError.message);
+      }
+    }, 2000);
     
   } catch (error) {
     console.error('❌ Erreur endpoint /convert:', error);
