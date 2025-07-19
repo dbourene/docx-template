@@ -8,6 +8,14 @@ import { exec } from 'child_process';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { generateContrat } from './scripts/generateContrat.js';
 
+exec('libreoffice --version', (err, stdout, stderr) => {
+  if (err) {
+    console.error('❌ LibreOffice non dispo au lancement :', stderr || err.message);
+  } else {
+    console.log('✅ LibreOffice version détectée au lancement :', stdout);
+  }
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json());
