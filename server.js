@@ -225,7 +225,26 @@ app.post('/generate', async (req, res) => {
     const publicUrl = publicUrlData?.publicUrl;
     console.log('✅ Fichier PDF uploadé. URL:', publicUrl);
 
-    // 9. Répondre au client
+    // 9. Mettre à jour la table contrats après signature électronique
+    console.log('🔄 Mise à jour de la table contrats...');
+    const { error: updateContratError } = await supabase
+      .from('contrats')
+      .update({
+        url_consommateur: urlData.publicUrl,
+        statut: 'attente_prod'
+      })
+      .eq('id', contrat_id);
+
+    if (updateContratError) {
+      console.error('❌ Erreur mise à jour contrat:', updateContratError.message);
+      throw new Error(`Erreur lors de la mise à jour du contrat: ${updateContratError.message}`);
+    }
+
+    console.log('✅ Contrat mis à jour:');
+    console.log('  - url_consommateur:', urlData.publicUrl);
+    console.log('  - statut: attente_prod');
+
+    // 10. Répondre au client
     console.log('🎉 Contrat généré avec succès:');
     console.log('  Fichier DOCX:', fs.existsSync(docxPath) ? 'Créé' : 'MANQUANT');
     console.log('  Fichier PDF:', fs.existsSync(pdfPath) ? 'Créé' : 'MANQUANT');
@@ -236,8 +255,8 @@ app.post('/generate', async (req, res) => {
       url: publicUrl,
       message: 'Contrat généré, signé et uploadé dans Supabase avec succès'
     });
-    
-    // 10. Nettoyage des fichiers temporaires
+
+    // 11. Nettoyage des fichiers temporaires
     setTimeout(() => {
       try {
         if (fs.existsSync(docxPath)) {
