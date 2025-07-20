@@ -179,8 +179,45 @@ app.post('/generate', async (req, res) => {
     res.status(200).json({
       success: true,
       fileName: pdfFileName,
-      message: 'Contrat généré et converti en PDF avec succès'
-    });
+      publicUrl: urlData.publicUrl,
+      message: 'Contrat généré, signé et uploadé dans Supabase avec succès'
+  });
+
+    // 7bis. Uploader le PDF dans Supabase
+    const { createClient } = await import('@supabase/supabase-js');
+
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+
+    // Nom du fichier PDF (ex: contrat-1234.pdf)
+    const pdfStoragePath = `consommateurs/contrat-${contrat_id}.pdf`;
+
+    console.log('⬆️ Upload du PDF vers Supabase:', pdfStoragePath);
+
+    const { error: uploadError } = await supabase.storage
+      .from('contrats')
+      .upload(pdfStoragePath, Buffer.from(modifiedPdfBytes), {
+      contentType: 'application/pdf',
+      upsert: true
+      });
+
+    if (uploadError) {
+      console.error('❌ Erreur upload vers Supabase:', uploadError.message);
+      throw new Error('Erreur lors de l’upload du fichier PDF dans Supabase');
+    }
+
+
+    // 7ter. Obtenir l’URL publique
+    const { data: urlData } = supabase.storage
+      .from('contrats')
+      .getPublicUrl(pdfStoragePath);
+
+    console.log('✅ Fichier PDF uploadé. URL:', urlData.publicUrl);
+
+
 
     // 8. Nettoyage des fichiers temporaires (après un délai)
     setTimeout(() => {
