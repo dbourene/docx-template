@@ -214,11 +214,16 @@ app.post('/generate', async (req, res) => {
     }
 
     // 8. Obtenir l'URL publique
-    const { data: urlData } = supabase.storage
+    const { data: publicUrlData, error: publicUrlError } = supabase.storage
       .from('contrats')
       .getPublicUrl(pdfStoragePath);
 
-    console.log('✅ Fichier PDF uploadé. URL:', urlData.publicUrl);
+    if (publicUrlError) {
+      throw new Error('Erreur lors de la récupération de l’URL publique du PDF');
+    }
+
+    const publicUrl = publicUrlData?.publicUrl;
+    console.log('✅ Fichier PDF uploadé. URL:', publicUrl);
 
     // 9. Répondre au client
     console.log('🎉 Contrat généré avec succès:');
@@ -228,9 +233,10 @@ app.post('/generate', async (req, res) => {
     res.status(200).json({
       success: true,
       fileName: pdfFileName,
-      url: urlData.publicUrl,
+      url: publicUrl,
       message: 'Contrat généré, signé et uploadé dans Supabase avec succès'
     });
+    
     // 10. Nettoyage des fichiers temporaires
     setTimeout(() => {
       try {
