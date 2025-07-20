@@ -9,27 +9,25 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import { generateContrat } from './scripts/generateContrat.js';
 
 
-const tempDir = path.join(process.cwd(), 'temp');
+// Configuration pour Docker/Render
+const tempDir = path.join('/app', 'temp');
+const PORT = process.env.PORT || 3001;
+
+// Créer le dossier temp au démarrage
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
   console.log('📁 Dossier temp créé');
 }
 
-// Vérification de la disponibilité de LibreOffice au lancement
-// Ceci est important pour s'assurer que le binaire est accessible avant de démarrer le serveur
-exec('libreoffice --version', (err, stdout, stderr) => {
-  if (err) {
-    console.error('❌ LibreOffice non dispo au lancement :', stderr || err.message);
-  } else {
-    console.log('✅ LibreOffice version détectée au lancement :', stdout);
-  }
+// Bloc try/catch global pour éviter les crashs
+process.on('uncaughtException', (error) => {
+  console.error('❌ ERREUR NON GÉRÉE:', error);
+  process.exit(1);
 });
 
-// Log explicite pour vérifier le binaire LibreOffice - temporaire
-exec('which libreoffice', (err, stdout, stderr) => {
-  if (stdout) console.log('✅ LibreOffice binaire situé ici :', stdout.trim());
-  if (stderr) console.log('⚠️ LibreOffice stderr which :', stderr);
-  if (err) console.error('❌ LibreOffice non trouvé dans PATH');
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ PROMESSE REJETÉE NON GÉRÉE:', reason);
+  process.exit(1);
 });
 
 const app = express();
@@ -37,6 +35,21 @@ app.use(cors());
 app.use(express.json());
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Vérification de LibreOffice au démarrage
+const checkLibreOffice = () => {
+  return new Promise((resolve) => {
+    exec('libreoffice --version', (err, stdout, stderr) => {
+      if (err) {
+        console.error('❌ LibreOffice non disponible:', stderr || err.message);
+        resolve(false);
+      } else {
+        console.log('✅ LibreOffice détecté:', stdout.trim());
+        resolve(true);
+      }
+    });
+  });
+};
 
 // Function to wait for PDF file to be created
 async function waitForPdfFile(pdfPath, maxRetries = 10, delayMs = 500) {
@@ -60,6 +73,12 @@ app.post('/generate', async (req, res) => {
     console.log('🚀 Début endpoint /generate');
     console.log('📋 Paramètres reçus:', { contrat_id, consommateur_id, producteur_id, installation_id });
 
+    // Vérifier LibreOffice
+    const libreOfficeOk = await checkLibreOffice();
+    if (!libreOfficeOk) {
+      throw new Error('LibreOffice non disponible pour la conversion PDF');
+    }
+
     // 1. Générer le fichier .docx
     console.log('📄 Génération du fichier .docx...');
     const result = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
@@ -73,27 +92,17 @@ app.post('/generate', async (req, res) => {
     });
     
     // Récupérer le buffer du fichier .docx
-    const docxBuffer = result.buffer || result.docxBuffer;
+    const rawBuffer = result.buffer || result.docxBuffer;
     
-    if (!docxBuffer) {
+    if (!rawBuffer) {
       throw new Error('Aucun buffer retourné par generateContrat');
     }
 
+    // Conversion correcte du buffer
+    const docxBuffer = Buffer.isBuffer(rawBuffer) ? rawBuffer : Buffer.from(rawBuffer);
     console.log('📦 Buffer récupéré, taille:', docxBuffer.length, 'bytes');
 
-    // Chemins des fichiers
-    const tempDir = path.join(__dirname, 'temp');
-
-    // Créer le dossier temp s'il n'existe pas
-    const tempFiles = fs.readdirSync(tempDir);
-    console.log('📁 Contenu du dossier temp après conversion:', tempFiles);
-
-
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-      console.log('📁 Dossier temp créé:', tempDir);
-    }
-    
+    // Chemins des fichiers dans /app/temp/
     const docxPath = path.join(tempDir, `contrat-${contrat_id}.docx`);
     const pdfPath = path.join(tempDir, `contrat-${contrat_id}.pdf`);
 
@@ -121,7 +130,12 @@ app.post('/generate', async (req, res) => {
     console.log('⚙️ Commande LibreOffice:', conversionCommand);
     
     await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timeout: Conversion PDF > 30 secondes'));
+      }, 30000);
+
       exec(conversionCommand, (err, stdout, stderr) => {
+        clearTimeout(timeout);
         console.log('📋 LibreOffice stdout:', stdout);
         if (stderr) {
           console.log('⚠️ LibreOffice stderr:', stderr);
@@ -147,6 +161,10 @@ app.post('/generate', async (req, res) => {
     console.log('  Chemin:', pdfPath);
     console.log('  Taille:', pdfStats.size, 'bytes');
 
+    if (pdfStats.size === 0) {
+      throw new Error('PDF généré mais vide');
+    }
+
     // 5. Charger le PDF et ajouter une signature visuelle
     console.log('📖 Chargement du PDF pour signature...');
     const existingPdfBytes = fs.readFileSync(pdfPath);
@@ -169,21 +187,7 @@ app.post('/generate', async (req, res) => {
     fs.writeFileSync(pdfPath, modifiedPdfBytes);
     console.log('💾 PDF signé sauvegardé');
 
-    // 7. Répondre au client
-    const pdfFileName = `CPV_${contrat_id}.pdf`;
-    
-    console.log('🎉 Contrat généré avec succès:');
-    console.log('  Fichier DOCX:', fs.existsSync(docxPath) ? 'Créé' : 'MANQUANT');
-    console.log('  Fichier PDF:', fs.existsSync(pdfPath) ? 'Créé' : 'MANQUANT');
-    
-    res.status(200).json({
-      success: true,
-      fileName: pdfFileName,
-      publicUrl: urlData.publicUrl,
-      message: 'Contrat généré, signé et uploadé dans Supabase avec succès'
-  });
-
-    // 7bis. Uploader le PDF dans Supabase
+    // 7. Uploader le PDF dans Supabase Storage (même emplacement que le .docx)
     const { createClient } = await import('@supabase/supabase-js');
 
     const supabase = createClient(
@@ -191,17 +195,17 @@ app.post('/generate', async (req, res) => {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-
-    // Nom du fichier PDF (ex: contrat-1234.pdf)
-    const pdfStoragePath = `consommateurs/contrat-${contrat_id}.pdf`;
+    // Utiliser le même nom que le .docx mais avec extension .pdf
+    const pdfFileName = result.fileName.replace('.docx', '.pdf');
+    const pdfStoragePath = `consommateurs/${pdfFileName}`;
 
     console.log('⬆️ Upload du PDF vers Supabase:', pdfStoragePath);
 
     const { error: uploadError } = await supabase.storage
       .from('contrats')
       .upload(pdfStoragePath, Buffer.from(modifiedPdfBytes), {
-      contentType: 'application/pdf',
-      upsert: true
+        contentType: 'application/pdf',
+        upsert: true
       });
 
     if (uploadError) {
@@ -209,17 +213,25 @@ app.post('/generate', async (req, res) => {
       throw new Error('Erreur lors de l’upload du fichier PDF dans Supabase');
     }
 
-
-    // 7ter. Obtenir l’URL publique
+    // 8. Obtenir l'URL publique
     const { data: urlData } = supabase.storage
       .from('contrats')
       .getPublicUrl(pdfStoragePath);
 
     console.log('✅ Fichier PDF uploadé. URL:', urlData.publicUrl);
 
-
-
-    // 8. Nettoyage des fichiers temporaires (après un délai)
+    // 9. Répondre au client
+    console.log('🎉 Contrat généré avec succès:');
+    console.log('  Fichier DOCX:', fs.existsSync(docxPath) ? 'Créé' : 'MANQUANT');
+    console.log('  Fichier PDF:', fs.existsSync(pdfPath) ? 'Créé' : 'MANQUANT');
+    
+    res.status(200).json({
+      success: true,
+      fileName: pdfFileName,
+      url: urlData.publicUrl,
+      message: 'Contrat généré, signé et uploadé dans Supabase avec succès'
+    });
+    // 10. Nettoyage des fichiers temporaires
     setTimeout(() => {
       try {
         if (fs.existsSync(docxPath)) {
@@ -231,48 +243,48 @@ app.post('/generate', async (req, res) => {
           console.log('🧹 Fichier .pdf temporaire supprimé');
         }
       } catch (cleanupError) {
-        console.warn('⚠️ Erreur lors du nettoyage:', cleanupError.message);
+        console.error('⚠️ Erreur lors du nettoyage:', cleanupError.message);
       }
-    }, 5000); // Délai de 5 secondes
+    }, 2000);
 
   } catch (error) {
-    console.error('❌ Erreur génération contrat:', error);
+    console.error('❌ ERREUR ENDPOINT /generate:', error.message);
     console.error('❌ Stack trace:', error.stack);
     
     res.status(500).json({
       success: false,
       error: error.message,
-      details: error.stack
+      endpoint: '/generate'
     });
   }
 });
 
-import { createClient } from '@supabase/supabase-js';
-
 // Endpoint pour convertir un .docx existant en PDF
 app.post('/convert', async (req, res) => {
   const { contrat_id } = req.body;
+  
   if (!contrat_id) {
     return res.status(400).json({ error: 'contrat_id manquant' });
   }
 
   console.log('🔄 Début conversion PDF pour contrat:', contrat_id);
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-
-  // Créer le dossier temp si besoin
-  const tempDir = path.join(__dirname, 'temp');
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
-  }
-
-  const docxPath = path.join(tempDir, `contrat-${contrat_id}.docx`);
-  const pdfPath = path.join(tempDir, `contrat-${contrat_id}.pdf`);
-
   try {
+    // Vérifier LibreOffice
+    const libreOfficeOk = await checkLibreOffice();
+    if (!libreOfficeOk) {
+      throw new Error('LibreOffice non disponible pour la conversion PDF');
+    }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    const docxPath = path.join(tempDir, `contrat-${contrat_id}.docx`);
+    const pdfPath = path.join(tempDir, `contrat-${contrat_id}.pdf`);
+
     // 1. Trouver le fichier .docx dans le bucket 'contrats'
     console.log('🔍 Recherche du fichier .docx dans le bucket contrats...');
     
@@ -313,7 +325,12 @@ app.post('/convert', async (req, res) => {
     // 4. Convertir .docx → .pdf avec LibreOffice
     console.log('🔄 Conversion .docx → .pdf...');
     await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timeout: Conversion PDF > 30 secondes'));
+      }, 30000);
+
       exec(`libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${tempDir}"`, (err, stdout, stderr) => {
+        clearTimeout(timeout);
         if (err) {
           console.error('❌ Erreur LibreOffice:', stderr);
           return reject(err);
@@ -330,6 +347,10 @@ app.post('/convert', async (req, res) => {
     console.log('📖 Lecture du PDF généré...');
     const pdfBuffer = fs.readFileSync(pdfPath);
     console.log('✅ PDF lu, taille:', pdfBuffer.length, 'bytes');
+
+    if (pdfBuffer.length === 0) {
+      throw new Error('PDF généré mais vide');
+    }
 
     // 7. Uploader le PDF dans le bucket 'contrats', dossier 'consommateurs'
     const pdfFileName = docxFile.name.replace('.docx', '.pdf');
@@ -367,23 +388,34 @@ app.post('/convert', async (req, res) => {
       try {
         if (fs.existsSync(docxPath)) fs.unlinkSync(docxPath);
         if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
-        console.log('🧹 Fichiers temporaires supprimés');
+        console.log('🧹 Fichiers temporaires supprimés (/convert)');
       } catch (cleanupError) {
-        console.warn('⚠️ Erreur nettoyage:', cleanupError.message);
+        console.error('⚠️ Erreur nettoyage:', cleanupError.message);
       }
     }, 2000);
     
   } catch (error) {
-    console.error('❌ Erreur endpoint /convert:', error);
+    console.error('❌ ERREUR ENDPOINT /convert:', error.message);
+    console.error('❌ Stack trace:', error.stack);
     res.status(500).json({
+      success: false,
       error: error.message,
-      stack: error.stack
+      endpoint: '/convert'
     });
   }
 });
 
 // Démarrer le serveur
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré sur le port ${PORT}`);
+app.listen(PORT, async () => {
+  console.log(`🟢 Serveur lancé sur le port ${PORT}`);
+  console.log(`🌐 URL: http://localhost:${PORT}`);
+  console.log(`📁 Dossier temp: ${tempDir}`);
+  
+  // Vérification initiale de LibreOffice
+  const libreOfficeOk = await checkLibreOffice();
+  if (!libreOfficeOk) {
+    console.error('⚠️ ATTENTION: LibreOffice non disponible - les conversions PDF échoueront');
+  }
+  
+  console.log('🚀 Serveur prêt à traiter les requêtes');
 });
