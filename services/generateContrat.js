@@ -1,3 +1,7 @@
+// Génère un contrat CPV .docx personnalisé
+// à partir du template CPV_template.docx
+
+
 import fs from 'fs/promises';
 import path from 'path';
 import { createReport } from 'docx-templates';            /* Bien conserver le nom du répertoire sous la forme docx-template et non template */

@@ -1,3 +1,6 @@
+// Convertit un fichier .docx en .pdf en utilisant LibreOffice
+// Télécharge le fichier depuis Supabase Storage, le convertit et le sauvegarde
+
 import { exec } from 'child_process';
 import path from 'path';
 import { promises as fs } from 'fs';

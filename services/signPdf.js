@@ -1,3 +1,6 @@
+// Signe un PDF en ajoutant une signature avec le nom, le rôle et la date du signataire
+// et sauvegarde le PDF signé à un emplacement spécifié
+
 import fs from 'fs/promises';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
