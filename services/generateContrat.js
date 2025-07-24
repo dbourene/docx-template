@@ -5,7 +5,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { createReport } from 'docx-templates';            /* Bien conserver le nom du répertoire sous la forme docx-template et non template */
-import supabase from '../utils/supabaseClient.js';
+import supabase from '../lib/supabaseClient.js';
 
 /**
  * Génère un contrat CPV personnalisé

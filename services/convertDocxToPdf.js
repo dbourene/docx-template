@@ -4,7 +4,7 @@
 import { exec } from 'child_process';
 import path from 'path';
 import { promises as fs } from 'fs';
-import supabase from '../utils/supabaseClient.js';
+import supabase from '../lib/supabaseClient.js';
 
 /**
  * Télécharge un fichier .docx depuis Supabase Storage et le convertit en .pdf à l'aide de LibreOffice
