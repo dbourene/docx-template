@@ -5,7 +5,8 @@ import { handleGenerateContrat } from '../services/handleGenerateContrat.js';
 
 const router = express.Router();
 
-router.post('/generate', handleGenerateContrat);
+// Le router est déjà monté à /generate dans server.js, donc ici on met juste "/"
+router.post('/', handleGenerateContrat);
 
 export default router;
 
