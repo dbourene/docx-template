@@ -8,7 +8,7 @@ import generateRouter from './routers/generate.js';
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const tempDir = path.join('/app', 'temp');
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
