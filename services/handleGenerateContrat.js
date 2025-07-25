@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { generateContrat } from './generateContrat.js';
 import { convertDocxToPdf } from './convertDocxToPdf.js';
-import { signPdf } from './signPdf.js';
+import signPdf from './signPdf.js';
 import { uploadToSupabase } from './uploadToSupabase.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
 
