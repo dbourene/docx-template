@@ -20,8 +20,6 @@ app.get('/', (req, res) => {
 });
 
 
-
-
 // Crée le dossier /temp si besoin
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);

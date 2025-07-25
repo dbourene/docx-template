@@ -6,24 +6,26 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 /**
  * Signature dans le PDF (clic d'acceptation)
- * @param {string} inputPdfPath - chemin du PDF d'origine
- * @param {string} outputPdfPath - chemin du PDF signé à sauvegarder
- * @param {object} signataire - informations du signataire
- * @param {string} signataire.nom - nom du signataire
+ * @param {Buffer} pdfBuffer - Buffer du PDF à signer
+ * @param {string} outputPdfPath - Chemin où sauvegarder le PDF signé
+ * @param {object} signataire - Informations du signataire
+ * @param {string} signataire.nom - Nom du signataire
  * @param {string} signataire.role - "consommateur" ou "producteur"
- * @param {string} signataire.date - date ISO
+ * @param {string} signataire.date - Date ISO
  */
-export async function signPdf(inputPdfPath, outputPdfPath, signataire) {
+export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
+  nom: 'Nom inconnu',
+  role: 'consommateur',
+  date: new Date().toISOString()
+}) {
   try {
-    const existingPdfBytes = await fs.readFile(inputPdfPath);
-    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
 
     const pages = pdfDoc.getPages();
     const lastPage = pages[pages.length - 1];
     const { width, height } = lastPage.getSize();
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
     const text = `Signé par : ${signataire.nom} (${signataire.role}) le ${new Date(signataire.date).toLocaleString()}`;
 
     lastPage.drawText(text, {
@@ -34,8 +36,8 @@ export async function signPdf(inputPdfPath, outputPdfPath, signataire) {
       color: rgb(0, 0, 0),
     });
 
-    const pdfBytes = await pdfDoc.save();
-    await fs.writeFile(outputPdfPath, pdfBytes);
+    const signedPdfBytes = await pdfDoc.save();
+    await fs.writeFile(outputPdfPath, signedPdfBytes);
 
     console.log(`✅ PDF signé et sauvegardé : ${outputPdfPath}`);
   } catch (error) {
