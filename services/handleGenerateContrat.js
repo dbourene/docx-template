@@ -1,15 +1,13 @@
 // Orchestre le flux de génération d'un contrat CPV
-// en récupérant les données nécessaires et en créant le document final
-
-
-
+// Génère le .docx, le convertit en PDF, le signe, l'upload et met à jour la BDD
 
 import fs from 'fs';
 import path from 'path';
-import { exec } from 'child_process';
-import { PDFDocument, rgb } from 'pdf-lib';
 import { generateContrat } from './generateContrat.js';
-import { supabase } from '../lib/supabaseClient.js';
+import { convertDocxToPdf } from './convertDocxToPdf.js';
+import signPdf from './signPdf.js';
+import uploadToSupabase from './uploadToSupabase.js';
+import updateContratInDatabase from './updateContratInDatabase.js';
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
@@ -18,8 +16,13 @@ export const handleGenerateContrat = async (req, res) => {
   console.log('📋 Paramètres reçus:', req.body);
 
   try {
-    console.log('📄 Génération du fichier .docx...');
+    // Étape 0 : Vérification
+    if (!contrat_id || !consommateur_id || !producteur_id || !installation_id) {
+      throw new Error('Tous les identifiants sont requis');
+    }
 
+    // Étape 1 : Génération du .docx
+    console.log('📄 Génération du fichier .docx...');
     const generationResult = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
 
     if (!generationResult.success || !generationResult.hasDocxBuffer) {
@@ -27,86 +30,58 @@ export const handleGenerateContrat = async (req, res) => {
     }
 
     const docxBuffer = generationResult.docxBuffer;
+    const tempDir = path.join('/app', 'temp');
+    await fs.promises.mkdir(tempDir, { recursive: true }); // Assure que le dossier existe
+
     const docxFileName = `contrat-${contrat_id}.docx`;
     const pdfFileName = `contrat-${contrat_id}.pdf`;
+    const signedPdfFileName = `contrat-${contrat_id}-signed.pdf`;
 
-    const tempDir = path.join('/app', 'temp');
     const docxPath = path.join(tempDir, docxFileName);
-    const pdfPath = path.join(tempDir, pdfFileName);
+    const signedPdfPath = path.join(tempDir, signedPdfFileName);
 
     console.log('📦 Buffer récupéré, taille:', docxBuffer.length, 'bytes');
-
     await fs.promises.writeFile(docxPath, docxBuffer);
-    console.log('✅ Fichier .docx créé avec succès:', docxPath);
+    console.log('✅ Fichier .docx écrit:', docxPath);
 
-    const libreOfficeCmd = `libreoffice --headless --convert-to pdf "${docxPath}" --outdir "${tempDir}"`;
-    console.log('🔄 Conversion .docx → .pdf avec LibreOffice...');
-    console.log('⚙️ Commande LibreOffice:', libreOfficeCmd);
+    // Étape 2 : Conversion DOCX → PDF
+    const pdfPath = await convertDocxToPdf(docxPath, tempDir);
+    console.log('✅ PDF généré:', pdfPath);
 
-    await new Promise((resolve, reject) => {
-      exec(libreOfficeCmd, (error, stdout, stderr) => {
-        if (error) {
-          return reject(error);
-        }
-        console.log('📋 LibreOffice stdout:', stdout);
-        resolve();
-      });
-    });
-
-    let attempts = 0;
-    while (!fs.existsSync(pdfPath) && attempts < 10) {
-      console.log('⏳ Attente de la création du fichier PDF...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      attempts++;
-    }
-
-    if (!fs.existsSync(pdfPath)) {
-      throw new Error('Le fichier PDF n’a pas été généré');
-    }
-
+    // Étape 3 : Lecture du PDF en buffer
     const pdfBuffer = await fs.promises.readFile(pdfPath);
-    console.log('✅ PDF créé avec succès:', pdfPath);
+    console.log('📄 PDF lu en mémoire, taille:', pdfBuffer.length, 'octets');
 
-    const pdfDoc = await PDFDocument.load(pdfBuffer);
-    const pages = pdfDoc.getPages();
-    const firstPage = pages[0];
+    // Étape 4 : Signature
+    await signPdf(pdfBuffer, signedPdfPath);
+    console.log('✅ PDF signé:', signedPdfPath);
 
-    firstPage.drawText('Signé électroniquement par le consommateur', {
-      x: 50,
-      y: 50,
-      size: 12,
-      color: rgb(0, 0.53, 0.71)
+    // Étape 5 : Upload vers Supabase
+    const supabaseKey = `contrats/consommateurs/${signedPdfFileName}`;
+    const { publicUrl, fullPath } = await uploadToSupabase(signedPdfPath, supabaseKey);
+    console.log('✅ Fichier PDF signé uploadé:', fullPath);
+
+    // Étape 6 : Mise à jour BDD
+    await updateContratInDatabase(contrat_id, {
+      statut: 'SIGNATURE_CONSOMMATEUR_OK',
+      url_document: publicUrl // colonne renommée
     });
 
-    const signedPdfBytes = await pdfDoc.save();
-
-    const pdfUploadPath = `contrats/consommateurs/${pdfFileName}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('contrats')
-      .upload(pdfUploadPath, Buffer.from(signedPdfBytes), {
-        contentType: 'application/pdf',
-        upsert: true
-      });
-
-    if (uploadError) {
-      throw new Error(`Erreur lors de l'upload du fichier PDF: ${uploadError.message}`);
-    }
-
-    const { data: urlData } = supabase.storage
-      .from('contrats')
-      .getPublicUrl(pdfUploadPath);
-
-    const publicUrl = urlData.publicUrl;
-
-    await supabase
-      .from('contrats')
-      .update({ statut: 'SIGNATURE_CONSOMMATEUR_OK', url_contrat_pdf: publicUrl })
-      .eq('id', contrat_id);
-
-    console.log('🎉 Contrat généré avec succès!');
+    console.log('🎉 Contrat généré et signé avec succès!');
     console.log('🔗 URL:', publicUrl);
 
+    // Étape 7 : Réponse client
     res.status(200).json({ success: true, url: publicUrl });
+
+    // Étape 8 : Nettoyage (optionnel)
+    try {
+      await fs.promises.unlink(docxPath);
+      await fs.promises.unlink(pdfPath);
+      await fs.promises.unlink(signedPdfPath);
+      console.log('🧹 Fichiers temporaires supprimés');
+    } catch (cleanupErr) {
+      console.warn('⚠️ Erreur nettoyage fichiers:', cleanupErr.message);
+    }
 
   } catch (error) {
     console.error('❌ Erreur generation contrat:', error);
