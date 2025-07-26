@@ -25,7 +25,7 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📄 Génération du fichier .docx...');
     const generationResult = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
 
-    if (!generationResult.success || !generationResult.hasDocxBuffer) {
+    if (!generationResult.success || !generationResult.docxBuffer) {
       throw new Error('La génération du contrat a échoué');
     }
 
