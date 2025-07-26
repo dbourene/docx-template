@@ -25,21 +25,21 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📄 Génération du fichier .docx...');
     const generationResult = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
 
-    if (!generationResult.success || !generationResult.docxBuffer) {
+    if (!generationResult.success || !generationResult.docxBuffer || !generationResult.fileName) {
       throw new Error('La génération du contrat a échoué');
     }
 
     const docxBuffer = generationResult.docxBuffer;
+    const originalFileName = generationResult.fileName; // ex: 'CPV_EntrepriseA_ConsommateurB.docx'
     const tempDir = path.join('/app', 'temp');
     await fs.promises.mkdir(tempDir, { recursive: true }); // Assure que le dossier existe
 
-    const docxFileName = `contrat-${contrat_id}.docx`;
-    const baseFileName = docxFileName.replace('.docx', '');
-    const signedPdfFileName = `${baseFileName}_cons.pdf`;
+    const baseFileName = originalFileName.replace('.docx', ''); // ex: 'CPV_EntrepriseA_ConsommateurB'
+    const signedPdfFileName = `${baseFileName}_cons.pdf`;  // ex: 'CPV_EntrepriseA_ConsommateurB_cons.pdf'
+    
+    // Note: Le nom final du PDF signé par le producteur sera géré dans la suite
     const finalPdfFileName = `${baseFileName}_cons_prod.pdf`; // Nom final du PDF signé par le producteur
-
-
-    const docxPath = path.join(tempDir, docxFileName);
+    const docxPath = path.join(tempDir, originalFileName); // Chemin complet du .docx temporaire
     const signedPdfPath = path.join(tempDir, signedPdfFileName);
 
     console.log('📦 Buffer récupéré, taille:', docxBuffer.length, 'bytes');
