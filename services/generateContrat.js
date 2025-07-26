@@ -182,7 +182,7 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
 
     return {
       success: true,
-      fileName,
+      fileName, // ex. 'CPV_EntrepriseA_ConsommateurB.docx'
       url: urlData.publicUrl,
       buffer: report,  // report est déjà un Buffer depuis createReport()
       docxBuffer: report  // Alias pour compatibilité avec server.js
