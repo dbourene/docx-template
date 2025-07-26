@@ -9,12 +9,12 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
  * @param {Buffer} pdfBuffer - Buffer du PDF à signer
  * @param {string} outputPdfPath - Chemin où sauvegarder le PDF signé
  * @param {object} signataire - Informations du signataire
- * @param {string} signataire.nom - Nom du signataire
+ * @param {string} signataire.id - ID du signataire
  * @param {string} signataire.role - "consommateur" ou "producteur"
  * @param {string} signataire.date - Date ISO
  */
 export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
-  nom: 'Nom inconnu',
+  id: 'ID inconnu',
   role: 'consommateur',
   date: new Date().toISOString()
 }) {
@@ -26,7 +26,7 @@ export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
     const { width, height } = lastPage.getSize();
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const text = `Signé par : ${signataire.nom} (${signataire.role}) le ${new Date(signataire.date).toLocaleString()}`;
+    const text = `Signé par : ${signataire.id} (${signataire.role}) le ${new Date(signataire.date).toLocaleString()}`;
 
     lastPage.drawText(text, {
       x: 50,
