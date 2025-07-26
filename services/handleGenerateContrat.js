@@ -57,9 +57,9 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('✅ PDF signé:', signedPdfPath);
 
     // Étape 5 : Upload vers Supabase
-    const supabaseKey = `contrats/consommateurs/${signedPdfFileName}`;
-    const { publicUrl, fullPath } = await uploadToSupabase(signedPdfPath, supabaseKey);
-    console.log('✅ Fichier PDF signé uploadé:', fullPath);
+    const supabasePath = `consommateurs/${signedPdfFileName}`; // <-- chemin relatif dans le bucket
+    const bucket = 'contrats'; // <-- nom correct du bucket
+    const { publicUrl, fullPath } = await uploadToSupabase(signedPdfPath, supabasePath, bucket);
 
     // Étape 6 : Mise à jour BDD
     await updateContratInDatabase(contrat_id, {
