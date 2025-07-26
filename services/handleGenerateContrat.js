@@ -34,8 +34,10 @@ export const handleGenerateContrat = async (req, res) => {
     await fs.promises.mkdir(tempDir, { recursive: true }); // Assure que le dossier existe
 
     const docxFileName = `contrat-${contrat_id}.docx`;
-    const pdfFileName = `contrat-${contrat_id}.pdf`;
-    const signedPdfFileName = `contrat-${contrat_id}-signed.pdf`;
+    const baseFileName = docxFileName.replace('.docx', '');
+    const signedPdfFileName = `${baseFileName}_cons.pdf`;
+    const finalPdfFileName = `${baseFileName}_cons_prod.pdf`; // Nom final du PDF signé par le producteur
+
 
     const docxPath = path.join(tempDir, docxFileName);
     const signedPdfPath = path.join(tempDir, signedPdfFileName);
