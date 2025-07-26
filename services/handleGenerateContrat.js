@@ -55,7 +55,14 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📄 PDF lu en mémoire, taille:', pdfBuffer.length, 'octets');
 
     // Étape 4 : Signature
-    await signPdf(pdfBuffer, signedPdfPath);
+    const signataire = {
+      nom: consommateur_id , // Utiliser l'ID du consommateur comme nom pour la signature
+      role: 'consommateur',
+      date: new Date().toISOString(),
+    };
+    console.log('✍️ Signature du PDF...');
+
+    await signPdf(pdfBuffer, signedPdfPath, signataire);
     console.log('✅ PDF signé:', signedPdfPath);
 
     // Étape 5 : Upload vers Supabase
