@@ -8,6 +8,7 @@ import { convertDocxToPdf } from './convertDocxToPdf.js';
 import signPdf from './signPdf.js';
 import { uploadToSupabase } from './uploadToSupabase.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
+import { getUserInfo } from './getUserInfo.js';
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
@@ -55,9 +56,13 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📄 PDF lu en mémoire, taille:', pdfBuffer.length, 'octets');
 
     // Étape 4 : Signature
+    const userInfo = await getUserInfo(consommateur_id);
+    if (!userInfo) {
+      throw new Error('Utilisateur non trouvé dans consommateurs ou producteurs');
+    }
     const signataire = {
-      nom: consommateur_id , // Utiliser l'ID du consommateur comme nom pour la signature
-      role: 'consommateur',
+      id: userInfo.user_id, // ← auth.users.id
+      role: userInfo.role,
       date: new Date().toISOString(),
     };
     console.log('✍️ Signature du PDF...');
