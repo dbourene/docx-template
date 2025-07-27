@@ -1,6 +1,8 @@
 // Met à jour un contrat dans la base de données
 // en définissant l'URL du PDF signé et le statut du contrat
 
+// A FAIRE : rendre dynamique le statut de la table contrats
+
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();
