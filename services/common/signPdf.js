@@ -15,7 +15,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
  */
 export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
   id: 'ID inconnu',
-  role: 'consommateur',
+  role: 'Role inconnu',
   date: new Date().toISOString()
 }) {
   try {
