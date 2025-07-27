@@ -1,7 +1,7 @@
 // Définit le endpoint POST /generate
 
 import express from 'express';
-import { handleGenerateContrat } from '../services/handleGenerateContrat.js';
+import { handleGenerateContrat } from '../services/contrat/handleGenerateContrat.js';
 
 const router = express.Router();
 

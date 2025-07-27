@@ -1,4 +1,4 @@
-import supabase from '../lib/supabaseClient.js';
+import supabase from '../../lib/supabaseClient.js';
 
 /**
  * Récupère l'ID auth et le rôle (consommateur ou producteur) d'un utilisateur en fonction de son ID métier

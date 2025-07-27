@@ -4,11 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import { generateContrat } from './generateContrat.js';
-import { convertDocxToPdf } from './convertDocxToPdf.js';
-import signPdf from './signPdf.js';
-import { uploadToSupabase } from './uploadToSupabase.js';
+import { convertDocxToPdf } from '../common/convertDocxToPdf.js';
+import signPdf from '../common/signPdf.js';
+import { uploadToSupabase } from '../common/uploadToSupabase.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
-import { getUserInfo } from './getUserInfo.js';
+import { getUserInfo } from '../common/getUserInfo.js';
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
