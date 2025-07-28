@@ -7,6 +7,7 @@ import { generateContrat } from './generateContrat.js';
 import { convertDocxToPdf } from '../common/convertDocxToPdf.js';
 import signPdf from '../common/signPdf.js';
 import { uploadToSupabase } from '../common/uploadToSupabase.js';
+import { determineStatutContrat } from './determineStatutContrat.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
 import { getUserInfo } from '../common/getUserInfo.js';
 
@@ -76,9 +77,10 @@ export const handleGenerateContrat = async (req, res) => {
     const { publicUrl, fullPath } = await uploadToSupabase(signedPdfPath, supabasePath, bucket);
 
     // Étape 6 : Mise à jour BDD
+    const statut = await determineStatutContrat(contrat_id);
     await updateContratInDatabase(contrat_id, {
-      statut: 'SIGNATURE_CONSOMMATEUR_OK',
-      url_document: publicUrl // colonne renommée
+      statut,
+      url_document: publicUrl
     });
 
     console.log('🎉 Contrat généré et signé avec succès!');
