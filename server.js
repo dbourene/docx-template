@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import generateRouter from './routers/generate.js';
+import signatureProducteurRouter from './routers/signatureProducteur.js';
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -12,7 +13,9 @@ const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
+
 app.use('/generate', generateRouter);
+app.use('/signature-producteur', signatureProducteurRouter);
 
 // Route de base pour vérifier que le serveur est en ligne - à utiliser pour les tests 
 app.get('/', (req, res) => {
