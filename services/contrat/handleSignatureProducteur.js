@@ -20,11 +20,23 @@ export const handleSignatureProducteur = async (req, res) => {
 
   try {
     const { contrat_id } = req.body;
-    const user_id = req.auth?.id;
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
 
-    if (!contrat_id || !user_id) {
+    if (!contrat_id || !token) {
       return res.status(400).json({ error: 'contrat_id et authentification requis' });
     }
+
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Token invalide ou utilisateur non trouvé' });
+    }
+
+    const user_id = user.id;
 
     // 🔍 Étape 1 : Récupération du contrat
     const { data: contrat, error: contratError } = await supabase
