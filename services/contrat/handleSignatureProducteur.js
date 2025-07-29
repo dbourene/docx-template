@@ -10,6 +10,14 @@ dotenv.config();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 export const handleSignatureProducteur = async (req, res) => {
+
+  // Vérification de l'authentification
+  console.log('📥 Requête reçue :', {
+    body: req.body,
+    headers: req.headers
+  });
+
+
   try {
     const { contrat_id } = req.body;
     const user_id = req.auth?.id;
