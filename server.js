@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/generate', generateRouter);
-app.use('/signatureProducteurs', signatureProducteurRouter);
+app.use('/signature-poducteur', signatureProducteurRouter);
 
 // Route de base pour vérifier que le serveur est en ligne - à utiliser pour les tests 
 app.get('/', (req, res) => {
