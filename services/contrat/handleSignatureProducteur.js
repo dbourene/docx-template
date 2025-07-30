@@ -11,14 +11,15 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 export const handleSignatureProducteur = async (req, res) => {
 
-  // Vérification de l'authentification
-  console.log('📥 Requête reçue :', {
-    body: req.body,
-    headers: req.headers
-  });
-
 
   try {
+  
+    // Vérification de l'authentification
+    console.log('📥 Requête reçue :', {
+      body: req.body,
+      headers: req.headers
+    });
+  
     const { contrat_id } = req.body;
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
@@ -46,6 +47,7 @@ export const handleSignatureProducteur = async (req, res) => {
       .single();
 
     if (contratError || !contrat) {
+      console.error("⛔ Erreur récupération contrat :", contratError);
       return res.status(404).json({ error: 'Contrat non trouvé' });
     }
 
@@ -64,8 +66,8 @@ export const handleSignatureProducteur = async (req, res) => {
     const fullPath = contrat.url_document.split('/storage/v1/object/public/')[1]; 
     const bucket = 'contrats'
     const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) // Vérifie si le chemin commence par le nom du bucket
-      ? fullPath // Si oui, on garde le chemin tel quel
-      : fullPath.slice(bucket.length + 1); // Sinon, on enlève le nom du bucket et le slash initial
+      ? fullPath.slice(bucket.length + 1) // Si oui, on garde le chemin tel quel
+      : fullPath; // Sinon, on enlève le nom du bucket et le slash initial
 
     const { data: pdfDownload, error: downloadError } = await supabase
       .storage
@@ -80,6 +82,7 @@ export const handleSignatureProducteur = async (req, res) => {
     });
 
     if (downloadError || !pdfDownload) {
+      console.error("⛔ Erreur téléchargement PDF :", downloadError);
       return res.status(500).json({ error: 'Erreur lors du téléchargement du PDF' });
     }
 
@@ -92,6 +95,11 @@ export const handleSignatureProducteur = async (req, res) => {
       role: 'producteur',
       date: new Date().toISOString()
     });
+
+    if (uploadError) {
+      console.error("⛔ Erreur upload PDF signé :", uploadError);
+      return res.status(500).json({ error: 'Erreur lors de l’upload du PDF signé.' });
+    }
 
     // 🗑️ Étape 5 : Supprimer anciens fichiers
     const prefix = pdfPathInBucket.replace('_cons.pdf', '');
