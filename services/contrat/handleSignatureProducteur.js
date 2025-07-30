@@ -61,15 +61,15 @@ export const handleSignatureProducteur = async (req, res) => {
     }
 
     // 📥 Étape 3 : Télécharger le PDF signé par le consommateur
-    const pdfPathInBucket = contrat.url_document.replace(`${process.env.SUPABASE_STORAGE_BASE_URL}/contrats/finalises/`, '');
+    const pdfPathInBucket = contrat.url_document.split('/storage/v1/object/public/')[1];
     const { data: pdfDownload, error: downloadError } = await supabase
       .storage
       .from('contrats')
-      .download(`finalises/${pdfPathInBucket}`);
+      .download(pdfPathInBucket);
 
     // Log du résultat du téléchargement
-      console.log('📄 Résultat download :', {
-      chemin: `finalises/${pdfPathInBucket}`,
+    console.log('📄 Résultat download :', {
+      chemin: pdfPathInBucket,
       erreur: downloadError,
       data: pdfDownload
     });
@@ -108,9 +108,12 @@ export const handleSignatureProducteur = async (req, res) => {
       });
 
     if (uploadError) {
+      console.error('❌ Erreur lors de l’upload du PDF signé producteur :', uploadError);
       return res.status(500).json({ error: 'Erreur upload PDF signé producteur' });
+    } else {
+      console.log(`✅ Upload réussi : ${newFilePath}`);
     }
-
+    
     // 🔗 URL publique
     const { data: urlData } = supabase
       .storage
