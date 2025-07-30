@@ -67,6 +67,13 @@ export const handleSignatureProducteur = async (req, res) => {
       .from('contrats')
       .download(`finalises/${pdfPathInBucket}`);
 
+    // Log du résultat du téléchargement
+      console.log('📄 Résultat download :', {
+      chemin: `finalises/${pdfPathInBucket}`,
+      erreur: downloadError,
+      data: pdfDownload
+    });
+
     if (downloadError || !pdfDownload) {
       return res.status(500).json({ error: 'Erreur lors du téléchargement du PDF' });
     }
