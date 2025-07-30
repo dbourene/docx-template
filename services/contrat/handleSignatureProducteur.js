@@ -61,10 +61,15 @@ export const handleSignatureProducteur = async (req, res) => {
     }
 
     // 📥 Étape 3 : Télécharger le PDF signé par le consommateur
-    const pdfPathInBucket = contrat.url_document.split('/storage/v1/object/public/')[1];
+    const fullPath = contrat.url_document.split('/storage/v1/object/public/')[1]; 
+    const bucket = 'contrats'
+    const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) // Vérifie si le chemin commence par le nom du bucket
+      ? fullPath // Si oui, on garde le chemin tel quel
+      : fullPath.slice(bucket.length + 1); // Sinon, on enlève le nom du bucket et le slash initial
+
     const { data: pdfDownload, error: downloadError } = await supabase
       .storage
-      .from('contrats')
+      .from(bucket)
       .download(pdfPathInBucket);
 
     // Log du résultat du téléchargement
@@ -113,7 +118,7 @@ export const handleSignatureProducteur = async (req, res) => {
     } else {
       console.log(`✅ Upload réussi : ${newFilePath}`);
     }
-    
+
     // 🔗 URL publique
     const { data: urlData } = supabase
       .storage
