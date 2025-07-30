@@ -112,7 +112,7 @@ export const handleSignatureProducteur = async (req, res) => {
     const fileContent = await fs.readFile(tempPath);
     const newFilePath = `finalises/${prefix}_prod.pdf`;
 
-    const { error: uploadError } = await supabase
+    const uploadResult = await supabase
       .storage
       .from('contrats')
       .upload(newFilePath, fileContent, {
@@ -120,11 +120,9 @@ export const handleSignatureProducteur = async (req, res) => {
         upsert: true
       });
 
-    if (uploadError) {
-      console.error('❌ Erreur lors de l’upload du PDF signé producteur :', uploadError);
+    if (uploadResult.error) {
+      console.error('📛 Erreur upload Supabase :', uploadResult.error);
       return res.status(500).json({ error: 'Erreur upload PDF signé producteur' });
-    } else {
-      console.log(`✅ Upload réussi : ${newFilePath}`);
     }
 
     // 🔗 URL publique
@@ -132,8 +130,9 @@ export const handleSignatureProducteur = async (req, res) => {
       .storage
       .from('contrats')
       .getPublicUrl(newFilePath);
-
+    
     const publicUrl = urlData.publicUrl;
+    console.log('🔗 URL publique générée :', publicUrl);
 
     // 🧠 Étape 7 : Calcul du nouveau statut
     const nouveauStatut = await determineStatutContrat(contrat_id);
