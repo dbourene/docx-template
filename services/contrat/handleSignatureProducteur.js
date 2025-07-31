@@ -11,7 +11,21 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 export const handleSignatureProducteur = async (req, res) => {
 
+ // 🧾 LOGS DE DEBUG
+  console.log('📩 Requête reçue pour signature producteur');
+  console.log('🔍 Headers:', req.headers);
+  console.log('🔍 Body:', req.body);
 
+  const { contrat_id } = req.body;
+
+  if (!contrat_id) {
+    console.warn('⚠️ contrat_id manquant ou corps vide');
+    return res.status(400).json({
+      success: false,
+      error: 'Requête invalide : contrat_id manquant'
+    });
+  }
+  
   try {
   
     // Vérification de l'authentification
