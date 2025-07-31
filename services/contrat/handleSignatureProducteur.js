@@ -5,6 +5,8 @@ import path from 'path';
 import signPdf from '../common/signPdf.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
 
+console.log('📥 Entrée dans handleSignatureProducteur');
+
 dotenv.config();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -25,7 +27,7 @@ export const handleSignatureProducteur = async (req, res) => {
       error: 'Requête invalide : contrat_id manquant'
     });
   }
-  
+
   try {
   
     // Vérification de l'authentification
@@ -130,6 +132,8 @@ export const handleSignatureProducteur = async (req, res) => {
         upsert: true
       });
 
+    console.log('✅ Fichier signé uploadé à :', publicUrl);
+
     if (uploadResult.error) {
       console.error('📛 Erreur upload Supabase :', uploadResult.error);
       return res.status(500).json({ error: 'Erreur upload PDF signé producteur' });
@@ -162,6 +166,8 @@ export const handleSignatureProducteur = async (req, res) => {
         url_document: publicUrl
       })
       .eq('id', contrat_id);
+
+    console.log('✅ Contrat mis à jour en BDD pour le producteur');
 
     if (updateError) {
       console.error("❌ Erreur lors de la mise à jour du contrat :", updateError);

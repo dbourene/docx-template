@@ -8,6 +8,9 @@ import { handleSignatureProducteur } from '../services/contrat/handleSignaturePr
 
 const router = express.Router();
 
-router.post('/', handleSignatureProducteur);
+router.post('/', (req, res, next) => {
+  console.log('📬 Reçu POST /signature-producteur avec body :', req.body);
+  next(); // Passe à handleSignatureProducteur
+}, handleSignatureProducteur);
 
 export default router;
