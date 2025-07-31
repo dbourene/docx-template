@@ -96,11 +96,7 @@ export const handleSignatureProducteur = async (req, res) => {
       date: new Date().toISOString()
     });
 
-    if (uploadError) {
-      console.error("⛔ Erreur upload PDF signé :", uploadError);
-      return res.status(500).json({ error: 'Erreur lors de l’upload du PDF signé.' });
-    }
-
+    
     // 🗑️ Étape 5 : Supprimer anciens fichiers
     const prefix = pdfPathInBucket.replace('_cons.pdf', '');
     await supabase.storage.from('contrats').remove([
