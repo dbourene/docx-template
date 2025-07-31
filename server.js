@@ -39,6 +39,13 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
+
+// ✅ Gestion du signal SIGTERM
+process.on('SIGTERM', () => {
+  console.log('🛑 Signal SIGTERM reçu. Fermeture du serveur proprement...');
+  process.exit(0);
+});
+
 // Lancer le serveur
 app.listen(PORT, () => {
   console.log(`🚀 Serveur lancé sur le port ${PORT}`);

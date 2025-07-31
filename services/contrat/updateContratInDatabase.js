@@ -10,6 +10,14 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export const updateContratInDatabase = async (contratId, { statut, url_document }) => {
   const now = new Date().toISOString();
 
+  console.log('🔄 Mise à jour du contrat', {
+    contratId,
+    statut,
+    url_document,
+    date_signature_consommateur: now,
+  });
+
+  // Mise à jour du contrat dans la base de données
   const { error } = await supabase
     .from('contrats')
     .update({
@@ -19,5 +27,14 @@ export const updateContratInDatabase = async (contratId, { statut, url_document 
     })
     .eq('id', contratId);
 
-  if (error) throw new Error('Erreur maj contrat: ' + error.message);
+    if (error) {
+    console.error('❌ Erreur lors de la mise à jour du contrat :', {
+      message: error.message,
+      details: error.details,
+      contratId,
+      statut,
+      url_document,
+    });
+    throw new Error('Erreur maj contrat: ' + error.message);
+  }
 };
