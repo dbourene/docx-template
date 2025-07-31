@@ -131,7 +131,13 @@ export const handleSignatureProducteur = async (req, res) => {
     console.log('🔗 URL publique générée :', publicUrl);
 
     // 🧠 Étape 7 : Calcul du nouveau statut
-    const nouveauStatut = await determineStatutContrat(contrat_id);
+    let nouveauStatut;
+    try {
+      nouveauStatut = await determineStatutContrat(contrat_id);
+    } catch (err) {
+      console.error("❌ Erreur lors de la détermination du statut :", err);
+      return res.status(500).json({ error: 'Erreur statut contrat' });
+    }
 
     // 📝 Étape 8 : Mise à jour du contrat
     const { error: updateError } = await supabase
@@ -144,7 +150,8 @@ export const handleSignatureProducteur = async (req, res) => {
       .eq('id', contrat_id);
 
     if (updateError) {
-      throw new Error('Erreur mise à jour contrat : ' + updateError.message);
+      console.error("❌ Erreur lors de la mise à jour du contrat :", updateError);
+      return res.status(500).json({ error: 'Erreur update contrat' });
     }
 
     return res.status(200).json({
