@@ -28,20 +28,23 @@ export const handleSignatureProducteur = async (req, res) => {
     });
   }
 
+  // Étape 1 : Vérification de l'authentification
   try {
-  
-    // Vérification de l'authentification
+    console.log('🔐 Étape 1 : Vérification de l\'authentification...');
     console.log('📥 Requête reçue :', {
       body: req.body,
       headers: req.headers
     });
   
-    const { contrat_id } = req.body;
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
 
     if (!contrat_id || !token) {
-      return res.status(400).json({ error: 'contrat_id et authentification requis' });
+      console.error('❌ Paramètres manquants:', { contrat_id: !!contrat_id, token: !!token });
+      return res.status(400).json({ 
+        success: false,
+        error: 'contrat_id et authentification requis' 
+      });
     }
 
     const {
@@ -50,79 +53,178 @@ export const handleSignatureProducteur = async (req, res) => {
     } = await supabase.auth.getUser(token);
 
     if (error || !user) {
-      return res.status(401).json({ error: 'Token invalide ou utilisateur non trouvé' });
+      console.error('❌ Erreur authentification:', error);
+      return res.status(401).json({ 
+        success: false,
+        error: 'Token invalide ou utilisateur non trouvé' 
+      });
     }
 
     const user_id = user.id;
+    console.log('✅ Authentification réussie pour user_id:', user_id);
 
-    // 🔍 Étape 1 : Récupération du contrat
-    const { data: contrat, error: contratError } = await supabase
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 1 (authentification):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la vérification de l\'authentification' 
+    });
+  }
+
+  // Étape 2 : Récupération du contrat
+  let contrat;
+  try {
+    console.log('🔍 Étape 2 : Récupération du contrat...');
+    const { data: contratData, error: contratError } = await supabase
       .from('contrats')
       .select('id, url_document, consommateur_id, date_signature_consommateur')
       .eq('id', contrat_id)
       .single();
 
-    if (contratError || !contrat) {
-      console.error("⛔ Erreur récupération contrat :", contratError);
-      return res.status(404).json({ error: 'Contrat non trouvé' });
+    if (contratError || !contratData) {
+      console.error("❌ Erreur récupération contrat :", contratError);
+      return res.status(404).json({ 
+        success: false,
+        error: 'Contrat non trouvé' 
+      });
     }
 
-    // 🔍 Étape 2 : Vérifier que le producteur est bien lié au contrat
-    const { data: producteur, error: prodError } = await supabase
+    contrat = contratData;
+    console.log('✅ Contrat récupéré:', contrat.id);
+
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 2 (récupération contrat):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la récupération du contrat' 
+    });
+  }
+
+  // Étape 3 : Vérification du producteur
+  let producteur;
+  try {
+    console.log('🏭 Étape 3 : Vérification du producteur...');
+    const { data: producteurData, error: prodError } = await supabase
       .from('producteurs')
       .select('id')
       .eq('user_id', user_id)
       .single();
 
-    if (prodError || !producteur) {
-      return res.status(403).json({ error: 'Producteur non autorisé' });
+    if (prodError || !producteurData) {
+      console.error('❌ Erreur récupération producteur:', prodError);
+      return res.status(403).json({ 
+        success: false,
+        error: 'Producteur non autorisé' 
+      });
     }
 
-    // 📥 Étape 3 : Télécharger le PDF signé par le consommateur
+    producteur = producteurData;
+    console.log('✅ Producteur vérifié:', producteur.id);
+
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 3 (vérification producteur):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la vérification du producteur' 
+    });
+  }
+
+  // Étape 4 : Téléchargement du PDF
+  let pdfBuffer, tempPath;
+  try {
+    console.log('📥 Étape 4 : Téléchargement du PDF...');
     const fullPath = contrat.url_document.split('/storage/v1/object/public/')[1]; 
     const bucket = 'contrats'
-    const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) // Vérifie si le chemin commence par le nom du bucket
-      ? fullPath.slice(bucket.length + 1) // Si oui, on garde le chemin tel quel
-      : fullPath; // Sinon, on enlève le nom du bucket et le slash initial
+    const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) 
+      ? fullPath.slice(bucket.length + 1) 
+      : fullPath;
+
+    console.log('📄 Chemin PDF dans bucket:', pdfPathInBucket);
 
     const { data: pdfDownload, error: downloadError } = await supabase
       .storage
       .from(bucket)
       .download(pdfPathInBucket);
 
-    // Log du résultat du téléchargement
     console.log('📄 Résultat download :', {
       chemin: pdfPathInBucket,
       erreur: downloadError,
-      data: pdfDownload
+      data: !!pdfDownload
     });
 
     if (downloadError || !pdfDownload) {
-      console.error("⛔ Erreur téléchargement PDF :", downloadError);
-      return res.status(500).json({ error: 'Erreur lors du téléchargement du PDF' });
+      console.error("❌ Erreur téléchargement PDF :", downloadError);
+      return res.status(500).json({ 
+        success: false,
+        error: 'Erreur lors du téléchargement du PDF' 
+      });
     }
 
-    const pdfBuffer = await pdfDownload.arrayBuffer();
-    const tempPath = `/tmp/${path.basename(pdfPathInBucket, '.pdf')}_prod.pdf`;
+    pdfBuffer = await pdfDownload.arrayBuffer();
+    tempPath = `/tmp/${path.basename(pdfPathInBucket, '.pdf')}_prod.pdf`;
+    console.log('✅ PDF téléchargé, taille:', pdfBuffer.byteLength, 'bytes');
 
-    // ✍️ Étape 4 : Signature du producteur
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 4 (téléchargement PDF):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors du téléchargement du PDF' 
+    });
+  }
+
+  // Étape 5 : Signature du PDF
+  try {
+    console.log('✍️ Étape 5 : Signature du PDF...');
     await signPdf(Buffer.from(pdfBuffer), tempPath, {
       id: user_id,
       role: 'producteur',
       date: new Date().toISOString()
     });
+    console.log('✅ PDF signé avec succès');
 
-    
-    // 🗑️ Étape 5 : Supprimer anciens fichiers
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 5 (signature PDF):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la signature du PDF' 
+    });
+  }
+
+  // Étape 6 : Suppression des anciens fichiers
+  try {
+    console.log('🗑️ Étape 6 : Suppression des anciens fichiers...');
+    const fullPath = contrat.url_document.split('/storage/v1/object/public/')[1]; 
+    const bucket = 'contrats'
+    const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) 
+      ? fullPath.slice(bucket.length + 1) 
+      : fullPath;
     const prefix = pdfPathInBucket.replace('_cons.pdf', '');
+    
     await supabase.storage.from('contrats').remove([
       `finalises/${prefix}.docx`,
       `finalises/${prefix}_cons.pdf`
     ]);
+    console.log('✅ Anciens fichiers supprimés');
 
-    // 📤 Étape 6 : Upload du PDF signé final
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 6 (suppression fichiers):', error);
+    // Non critique, on continue
+  }
+
+  // Étape 7 : Upload du PDF signé
+  let publicUrl;
+  try {
+    console.log('📤 Étape 7 : Upload du PDF signé...');
     const fileContent = await fs.readFile(tempPath);
+    const fullPath = contrat.url_document.split('/storage/v1/object/public/')[1]; 
+    const bucket = 'contrats'
+    const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) 
+      ? fullPath.slice(bucket.length + 1) 
+      : fullPath;
+    const prefix = pdfPathInBucket.replace('_cons.pdf', '');
     const newFilePath = `finalises/${prefix}_prod.pdf`;
+
+    console.log('📁 Nouveau chemin fichier:', newFilePath);
 
     const uploadResult = await supabase
       .storage
@@ -132,32 +234,49 @@ export const handleSignatureProducteur = async (req, res) => {
         upsert: true
       });
 
-    console.log('✅ Fichier signé uploadé à :', publicUrl);
-
     if (uploadResult.error) {
-      console.error('📛 Erreur upload Supabase :', uploadResult.error);
-      return res.status(500).json({ error: 'Erreur upload PDF signé producteur' });
+      console.error('❌ Erreur upload Supabase :', uploadResult.error);
+      return res.status(500).json({ 
+        success: false,
+        error: 'Erreur upload PDF signé producteur' 
+      });
     }
 
-    // 🔗 URL publique
+    // Génération de l'URL publique
     const { data: urlData } = supabase
       .storage
       .from('contrats')
       .getPublicUrl(newFilePath);
     
-    const publicUrl = urlData.publicUrl;
-    console.log('🔗 URL publique générée :', publicUrl);
+    publicUrl = urlData.publicUrl;
+    console.log('✅ Fichier signé uploadé à :', publicUrl);
 
-    // 🧠 Étape 7 : Calcul du nouveau statut
-    let nouveauStatut;
-    try {
-      nouveauStatut = await determineStatutContrat(contrat_id);
-    } catch (err) {
-      console.error("❌ Erreur lors de la détermination du statut :", err);
-      return res.status(500).json({ error: 'Erreur statut contrat' });
-    }
+  } catch (error) {
+    console.error('❌ Erreur dans l\'étape 7 (upload PDF):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de l\'upload du PDF signé' 
+    });
+  }
 
-    // 📝 Étape 8 : Mise à jour du contrat
+  // Étape 8 : Calcul du nouveau statut
+  let nouveauStatut;
+  try {
+    console.log('🧠 Étape 8 : Calcul du nouveau statut...');
+    nouveauStatut = await determineStatutContrat(contrat_id);
+    console.log('✅ Nouveau statut calculé:', nouveauStatut);
+
+  } catch (error) {
+    console.error("❌ Erreur dans l'étape 8 (calcul statut) :", error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la détermination du statut' 
+    });
+  }
+
+  // Étape 9 : Mise à jour du contrat
+  try {
+    console.log('📝 Étape 9 : Mise à jour du contrat...');
     const { error: updateError } = await supabase
       .from('contrats')
       .update({
@@ -167,21 +286,28 @@ export const handleSignatureProducteur = async (req, res) => {
       })
       .eq('id', contrat_id);
 
-    console.log('✅ Contrat mis à jour en BDD pour le producteur');
-
     if (updateError) {
       console.error("❌ Erreur lors de la mise à jour du contrat :", updateError);
-      return res.status(500).json({ error: 'Erreur update contrat' });
+      return res.status(500).json({ 
+        success: false,
+        error: 'Erreur lors de la mise à jour du contrat' 
+      });
     }
 
+    console.log('✅ Contrat mis à jour en BDD pour le producteur');
+
     return res.status(200).json({
+      success: true,
       message: 'Contrat signé par le producteur',
       url_document: publicUrl,
       statut: nouveauStatut
     });
 
   } catch (error) {
-    console.error('❌ Erreur signature producteur :', error);
-    return res.status(500).json({ error: error.message });
+    console.error('❌ Erreur dans l\'étape 9 (mise à jour contrat):', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la mise à jour du contrat' 
+    });
   }
 };
