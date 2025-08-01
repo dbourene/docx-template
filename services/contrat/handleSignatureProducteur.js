@@ -60,7 +60,7 @@ export const handleSignatureProducteur = async (req, res) => {
       });
     }
 
-    const user_id = user.id;
+    var user_id = user.id; // 👈 utilise `var` au lieu de `const` pour accéder à user_id en dehors du bloc
     console.log('✅ Authentification réussie pour user_id:', user_id);
 
   } catch (error) {
@@ -102,6 +102,9 @@ export const handleSignatureProducteur = async (req, res) => {
 
   // Étape 3 : Vérification du producteur
   let producteur;
+  
+  console.log('🔍 Recherche producteur lié à user_id:', user_id);
+  
   try {
     console.log('🏭 Étape 3 : Vérification du producteur...');
     const { data: producteurData, error: prodError } = await supabase
