@@ -104,7 +104,7 @@ export const handleSignatureProducteur = async (req, res) => {
   let producteur;
   
   console.log('🔍 Recherche producteur lié à user_id:', user_id);
-  
+
   try {
     console.log('🏭 Étape 3 : Vérification du producteur...');
     const { data: producteurData, error: prodError } = await supabase
@@ -262,11 +262,13 @@ export const handleSignatureProducteur = async (req, res) => {
     });
   }
 
+  const now = new Date().toISOString();
+
   // Étape 8 : Calcul du nouveau statut
   let nouveauStatut;
   try {
     console.log('🧠 Étape 8 : Calcul du nouveau statut...');
-    nouveauStatut = await determineStatutContrat(contrat_id);
+    nouveauStatut = await determineStatutContrat(contrat_id, now);
     console.log('✅ Nouveau statut calculé:', nouveauStatut);
 
   } catch (error) {
@@ -283,7 +285,7 @@ export const handleSignatureProducteur = async (req, res) => {
     const { error: updateError } = await supabase
       .from('contrats')
       .update({
-        date_signature_producteur: new Date().toISOString(),
+        date_signature_producteur: now,
         statut: nouveauStatut,
         url_document: publicUrl
       })

@@ -1,12 +1,10 @@
-// Déterminer le statut du contrat en fonction des signatures et du type de consommateur
-
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-export const determineStatutContrat = async (contratId) => {
+export const determineStatutContrat = async (contratId, dateSignatureProducteurOverride = null) => {
   // Étape 1 : récupérer le contrat
   const { data: contrat, error: errContrat } = await supabase
     .from('contrats')
@@ -31,22 +29,32 @@ export const determineStatutContrat = async (contratId) => {
 
   const type = consommateur.type; // "pro" ou "particulier"
   const now = new Date();
-  const dateSignatureProd = contrat.date_signature_producteur
+
+  const dateSignatureCons = contrat.date_signature_consommateur
+    ? new Date(contrat.date_signature_consommateur)
+    : null;
+  const dateSignatureProd = dateSignatureProducteurOverride
+    ? new Date(dateSignatureProducteurOverride)
+    : contrat.date_signature_producteur
     ? new Date(contrat.date_signature_producteur)
     : null;
 
-  // Cas 1 : Particulier
   if (type === 'particulier') {
-    if (dateSignatureProd) {
-      const diffDays = Math.floor((now - dateSignatureProd) / (1000 * 60 * 60 * 24));
-      return diffDays < 14 ? 'attente_délai_légal' : 'en_cours';
+    if (!dateSignatureCons) {
+      return 'panier'; // ou autre statut par défaut
+    }
+
+    const diffDays = Math.floor((now - dateSignatureCons) / (1000 * 60 * 60 * 24));
+
+    if (!dateSignatureProd) {
+      // Le producteur n'a pas signé
+      return diffDays >= 14 ? 'abandon_délai_légal_expiré' : 'attente_prod_délai_légal';
     } else {
-      const diffDays = Math.floor((now - now) / (1000 * 60 * 60 * 24)); // tjrs 0
-      return diffDays < 14 ? 'attente_prod_délai_légal' : 'abandon_délai_légal_expiré';
+      // Le producteur a signé
+      return diffDays >= 14 ? 'en_cours' : 'attente_délai_légal';
     }
   }
 
-  // Cas 2 : Professionnel
   if (type === 'pro') {
     return dateSignatureProd ? 'en_cours' : 'attente_prod';
   }
