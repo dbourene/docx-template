@@ -221,12 +221,18 @@ export const handleSignatureProducteur = async (req, res) => {
     const fileContent = await fs.readFile(tempPath);
     const fullPath = contrat.url_document.split('/storage/v1/object/public/')[1]; 
     const bucket = 'contrats'
+    
+    // Exemple de fullPath : 'contrats/consommateurs/CPV_Xxx_Yxx_cons.pdf'
     const pdfPathInBucket = fullPath.startsWith(`${bucket}/`) 
       ? fullPath.slice(bucket.length + 1) 
       : fullPath;
-    const prefix = pdfPathInBucket.replace('_cons.pdf', '');
-    const newFilePath = `finalises/${prefix}_prod.pdf`;
+    
+    // Extraction du nom de fichier et création du nouveau chemin
+    const fileName = pdfPathInBucket.split('/').pop(); // CPV_Xxx_Yxx_cons.pdf
+    const baseName = fileName.replace('_cons.pdf', ''); // CPV_Xxx_Yxx
 
+    // Nouveau chemin : 'finalises/CPV_Xxx_Yxx_prod.pdf'
+    const newFilePath = `finalises/${baseName}_prod.pdf`;
     console.log('📁 Nouveau chemin fichier:', newFilePath);
 
     const uploadResult = await supabase
