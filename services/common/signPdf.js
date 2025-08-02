@@ -28,9 +28,16 @@ export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const text = `Signé par : ${signataire.id} (${signataire.role}) le ${new Date(signataire.date).toLocaleString()}`;
 
+    // Positionnement du texte en bas à gauche, avec un décalage un peu plus haut pour le producteur
+    let y = 50;
+    if (signataire.role === 'producteur') {
+      y = 70;  // quelques pixels au-dessus
+    }
+    
+    
     lastPage.drawText(text, {
       x: 50,
-      y: 50, // marge basse
+      y: y, // marge basse
       size: 12,
       font,
       color: rgb(0, 0, 0),
