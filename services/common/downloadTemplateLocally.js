@@ -21,8 +21,11 @@ export async function downloadTemplateLocally(templateFileName) {
       .from('contrats')
       .download(`template/${templateFileName}`);
 
-    if (error) {
-      throw new Error(`Erreur téléchargement template depuis Supabase: ${error.message}`);
+    console.log('🧪 Résultat Supabase:', { data, error });
+
+    if (error || !data) {
+    const message = error?.message || 'Réponse vide ou invalide';
+    throw new Error(`Erreur téléchargement template depuis Supabase: ${message}`);
     }
 
     const buffer = await data.arrayBuffer();
