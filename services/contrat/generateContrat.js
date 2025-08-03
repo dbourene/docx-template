@@ -91,36 +91,36 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
 
       // Données consommateur
       consommateur: {
-        contact_prenom: consommateur.contact_prenom || '[PRENOM_ABSENT]',
-        contact_nom: consommateur.contact_nom || '[NOM_ABSENT]',
-        contact_email: consommateur.contact_email || '[EMAIL_ABSENT]',
-        contact_telephone: consommateur.contact_telephone || '[TEL_ABSENT]',
-        adresse: consommateur.adresse || '[ADRESSE_ABSENTE]',
-        prm: consommateur.prm || '[PRM_ABSENT]',
-        siret: consommateur.siret || '[SIRET_ABSENT]',
-        denominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
-        sigleUniteLegale: consommateur.sigleUniteLegale || '[SIGLE_ABSENT]'
+        consommateur_contact_prenom: consommateur.contact_prenom || '[PRENOM_ABSENT]',
+        consommateur_contact_nom: consommateur.contact_nom || '[NOM_ABSENT]',
+        consommateur_contact_email: consommateur.contact_email || '[EMAIL_ABSENT]',
+        consommateur_contact_telephone: consommateur.contact_telephone || '[TEL_ABSENT]',
+        consommateur_adresse: consommateur.adresse || '[ADRESSE_ABSENTE]',
+        consommateur_prm: consommateur.prm || '[PRM_ABSENT]',
+        consommateur_siret: consommateur.siret || '[SIRET_ABSENT]',
+        consommateur_denominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
+        consommateur_sigleUniteLegale: consommateur.sigleUniteLegale || '[SIGLE_ABSENT]'
       },
 
       // Données producteur
       producteur: {
-        contact_prenom: producteur.contact_prenom || '[PRENOM_ABSENT]',
-        contact_nom: producteur.contact_nom || '[NOM_ABSENT]',
-        contact_email: producteur.contact_email || '[EMAIL_ABSENT]',
-        contact_telephone: producteur.contact_telephone || '[TEL_ABSENT]',
-        adresse: producteur.adresse || '[ADRESSE_ABSENTE]',
-        siret: producteur.siret || '[SIRET_ABSENT]',
-        denominationUniteLegale: producteur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
-        sigleUniteLegale: producteur.sigleUniteLegale || '[SIGLE_ABSENT]'
+        producteur_contact_prenom: producteur.contact_prenom || '[PRENOM_ABSENT]',
+        producteur_contact_nom: producteur.contact_nom || '[NOM_ABSENT]',
+        producteur_contact_email: producteur.contact_email || '[EMAIL_ABSENT]',
+        producteur_contact_telephone: producteur.contact_telephone || '[TEL_ABSENT]',
+        producteur_adresse: producteur.adresse || '[ADRESSE_ABSENTE]',
+        producteur_siret: producteur.siret || '[SIRET_ABSENT]',
+        producteur_denominationUniteLegale: producteur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
+        producteur_sigleUniteLegale: producteur.sigleUniteLegale || '[SIGLE_ABSENT]'
       },
 
       // Données installation
       installation: {
-        prm: installation.prm || '[PRM_ABSENT]',
-        puissance: installation.puissance?.toString() || '[PUISSANCE_ABSENTE]',
-        tarif_base: installation.tarif_base?.toString() || '[TARIF_ABSENT]',
-        adresse: installation.adresse || '[ADRESSE_INSTALLATION_ABSENTE]',
-        titulaire: installation.titulaire || '[TITULAIRE_ABSENT]'
+        installation_prm: installation.prm || '[PRM_ABSENT]',
+        installation_puissance: installation.puissance?.toString() || '[PUISSANCE_ABSENTE]',
+        installation_tarif_base: installation.tarif_base?.toString() || '[TARIF_ABSENT]',
+        installation_adresse: installation.adresse || '[ADRESSE_INSTALLATION_ABSENTE]',
+        installation_titulaire: installation.titulaire || '[TITULAIRE_ABSENT]'
       },
 
       // Données générales

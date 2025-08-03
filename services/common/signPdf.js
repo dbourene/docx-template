@@ -29,9 +29,9 @@ export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
     const text = `Signé par : ${signataire.id} (${signataire.role}) le ${new Date(signataire.date).toLocaleString()}`;
 
     // Positionnement du texte en bas à gauche, avec un décalage un peu plus haut pour le producteur
-    let y = 50;
+    let y = 150;
     if (signataire.role === 'producteur') {
-      y = 70;  // quelques pixels au-dessus
+      y = 170;  // quelques pixels au-dessus
     }
     
     
