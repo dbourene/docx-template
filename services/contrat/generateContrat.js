@@ -90,38 +90,38 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
       producteur_entreprise: producteurType === 'entreprise',
 
       // Données consommateur
-      consommateur: {
-        consommateur_contact_prenom: consommateur.contact_prenom || '[PRENOM_ABSENT]',
-        consommateur_contact_nom: consommateur.contact_nom || '[NOM_ABSENT]',
-        consommateur_contact_email: consommateur.contact_email || '[EMAIL_ABSENT]',
-        consommateur_contact_telephone: consommateur.contact_telephone || '[TEL_ABSENT]',
-        consommateur_adresse: consommateur.adresse || '[ADRESSE_ABSENTE]',
-        consommateur_prm: consommateur.prm || '[PRM_ABSENT]',
-        consommateur_siret: consommateur.siret || '[SIRET_ABSENT]',
-        consommateur_denominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
-        consommateur_sigleUniteLegale: consommateur.sigleUniteLegale || '[SIGLE_ABSENT]'
-      },
+      // consommateur: {  <- à rétablir si non fonctionnel
+      consommateur_contact_prenom: consommateur.contact_prenom || '[PRENOM_ABSENT]',
+      consommateur_contact_nom: consommateur.contact_nom || '[NOM_ABSENT]',
+      consommateur_contact_email: consommateur.contact_email || '[EMAIL_ABSENT]',
+      consommateur_contact_telephone: consommateur.contact_telephone || '[TEL_ABSENT]',
+      consommateur_adresse: consommateur.adresse || '[ADRESSE_ABSENTE]',
+      consommateur_prm: consommateur.prm || '[PRM_ABSENT]',
+      consommateur_siret: consommateur.siret || '[SIRET_ABSENT]',
+      consommateur_denominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
+      consommateur_sigleUniteLegale: consommateur.sigleUniteLegale || '[SIGLE_ABSENT]', // , <- à supprimer si non fonctionnel
+      // },  <- à rétablir si non fonctionnel
 
       // Données producteur
-      producteur: {
-        producteur_contact_prenom: producteur.contact_prenom || '[PRENOM_ABSENT]',
-        producteur_contact_nom: producteur.contact_nom || '[NOM_ABSENT]',
-        producteur_contact_email: producteur.contact_email || '[EMAIL_ABSENT]',
-        producteur_contact_telephone: producteur.contact_telephone || '[TEL_ABSENT]',
-        producteur_adresse: producteur.adresse || '[ADRESSE_ABSENTE]',
-        producteur_siret: producteur.siret || '[SIRET_ABSENT]',
-        producteur_denominationUniteLegale: producteur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
-        producteur_sigleUniteLegale: producteur.sigleUniteLegale || '[SIGLE_ABSENT]'
-      },
+      // producteur: {  <- à rétablir si non fonctionnel
+      producteur_contact_prenom: producteur.contact_prenom || '[PRENOM_ABSENT]',
+      producteur_contact_nom: producteur.contact_nom || '[NOM_ABSENT]',
+      producteur_contact_email: producteur.contact_email || '[EMAIL_ABSENT]',
+      producteur_contact_telephone: producteur.contact_telephone || '[TEL_ABSENT]',
+      producteur_adresse: producteur.adresse || '[ADRESSE_ABSENTE]',
+      producteur_siret: producteur.siret || '[SIRET_ABSENT]',
+      producteur_denominationUniteLegale: producteur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
+      producteur_sigleUniteLegale: producteur.sigleUniteLegale || '[SIGLE_ABSENT]', // , <- à supprimer si non fonctionnel
+      // },  <- à rétablir si non fonctionnel
 
       // Données installation
-      installation: {
-        installation_prm: installation.prm || '[PRM_ABSENT]',
-        installation_puissance: installation.puissance?.toString() || '[PUISSANCE_ABSENTE]',
-        installation_tarif_base: installation.tarif_base?.toString() || '[TARIF_ABSENT]',
-        installation_adresse: installation.adresse || '[ADRESSE_INSTALLATION_ABSENTE]',
-        installation_titulaire: installation.titulaire || '[TITULAIRE_ABSENT]'
-      },
+      // installation: {  <- à rétablir si non fonctionnel
+      installation_prm: installation.prm || '[PRM_ABSENT]',
+      installation_puissance: installation.puissance?.toString() || '[PUISSANCE_ABSENTE]',
+      installation_tarif_base: installation.tarif_base?.toString() || '[TARIF_ABSENT]',
+      installation_adresse: installation.adresse || '[ADRESSE_INSTALLATION_ABSENTE]',
+      installation_titulaire: installation.titulaire || '[TITULAIRE_ABSENT]', // , <- à supprimer si non fonctionnel
+      // },  <- à rétablir si non fonctionnel
 
       // Données générales
       date: new Date().toLocaleDateString('fr-FR'),
