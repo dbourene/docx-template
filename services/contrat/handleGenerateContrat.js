@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { generateContrat } from './generateContrat.js';
+import { downloadTemplateLocally } from '../common/downloadTemplateLocally.js';
 import { convertDocxToPdf } from '../common/convertDocxToPdf.js';
 import signPdf from '../common/signPdf.js';
 import { uploadToSupabase } from '../common/uploadToSupabase.js';
@@ -24,6 +25,9 @@ export const handleGenerateContrat = async (req, res) => {
     }
 
     // Étape 1 : Génération du .docx
+    await downloadTemplateLocally('CPV_template_V0_1.docx'); // Assurez-vous que le template est téléchargé
+    console.log('📥 Template téléchargé localement');
+    
     console.log('📄 Génération du fichier .docx...');
     const generationResult = await generateContrat(contrat_id, consommateur_id, producteur_id, installation_id);
 

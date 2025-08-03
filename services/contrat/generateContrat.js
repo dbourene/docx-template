@@ -1,5 +1,5 @@
 // Génère un contrat CPV .docx personnalisé
-// à partir du template CPV_template.docx
+// à partir du template CPV_template_V0_1.docx
 
 
 import fs from 'fs/promises';
@@ -70,12 +70,12 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
 
     // 5. Charger le template
     console.log('📄 Chargement du template...');
-    const templatePath = path.join(process.cwd(), 'docx-templates', 'CPV_template.docx');
+    const templatePath = path.join(process.cwd(), 'docx-templates', 'CPV_template_V0_1.docx');  // Assurez-vous que le nom du fichier est correct
     
     try {
       await fs.access(templatePath);
     } catch {
-      throw new Error('Template CPV_template.docx non trouvé dans le dossier docx-templates/');
+      throw new Error('Template CPV_template_V0_1.docx non trouvé dans le dossier docx-templates/');
     }
 
     const template = await fs.readFile(templatePath);
