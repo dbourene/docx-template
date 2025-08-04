@@ -151,7 +151,7 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
       data: templateData,
       cmdDelimiter: ['<<', '>>'], // Délimiteurs pour les commandes
       // Pour les littéraux XML, vous pouvez utiliser : {{ }}
-      literalXmlDelimiter: ['{{', '}}'],
+      // literalXmlDelimiter: ['{{', '}}'],
       processLineBreaks: true
     });
 
