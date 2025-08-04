@@ -149,8 +149,9 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
     const report = await createReport({    
       template,
       data: templateData,
-      cmdDelimiter: ['<<', '>>'],
-      /* literalXmlDelimiter: ['{{', '}}'], */
+      cmdDelimiter: ['<<', '>>'], // Délimiteurs pour les commandes
+      // Pour les littéraux XML, vous pouvez utiliser : {{ }}
+      literalXmlDelimiter: ['{{', '}}'],
       processLineBreaks: true
     });
 
