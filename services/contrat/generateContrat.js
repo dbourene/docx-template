@@ -98,7 +98,7 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
       consommateur_adresse: consommateur.adresse || '[ADRESSE_ABSENTE]',
       consommateur_prm: consommateur.prm || '[PRM_ABSENT]',
       consommateur_siret: consommateur.siret || '[SIRET_ABSENT]',
-      consommateur_denominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
+      consommateurDenominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
       consommateur_sigleUniteLegale: consommateur.sigleUniteLegale || '[SIGLE_ABSENT]', // , <- à supprimer si non fonctionnel
       // },  <- à rétablir si non fonctionnel
 
@@ -108,7 +108,7 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
       producteur_contact_nom: producteur.contact_nom || '[NOM_ABSENT]',
       producteur_contact_email: producteur.contact_email || '[EMAIL_ABSENT]',
       producteur_contact_telephone: producteur.contact_telephone || '[TEL_ABSENT]',
-      producteur_adresse: producteur.adresse || '[ADRESSE_ABSENTE]',
+      producteurAdresse: producteur.adresse || '[ADRESSE_ABSENTE]',
       producteur_siret: producteur.siret || '[SIRET_ABSENT]',
       producteur_denominationUniteLegale: producteur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
       producteur_sigleUniteLegale: producteur.sigleUniteLegale || '[SIGLE_ABSENT]', // , <- à supprimer si non fonctionnel
