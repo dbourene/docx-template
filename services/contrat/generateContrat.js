@@ -130,8 +130,22 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
 
     console.log('📝 Données template préparées');
 
+    // Vérification des données
+    console.log('🔍 Vérification des données...');
+    if (!consommateur) {
+      throw new Error('Données consommateur introuvables');
+    }
+    if (!producteur) {
+      throw new Error('Données producteur introuvables');
+    }
+    if (!installation) {
+      throw new Error('Données installation introuvables');
+    }
+
+
     // 7. Générer le document
     console.log('🔄 Génération du document...');
+    console.log('🧾 templateData =', JSON.stringify(templateData, null, 2));
     const report = await createReport({    
       template,
       data: templateData,
