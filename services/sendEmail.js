@@ -15,7 +15,7 @@ export async function sendEmail({ to, subject, html }) {
     });
 
     if (error) {
-      console.error('Erreur d’envoi de l’email:', error);
+      console.error('Erreur envoi email:', error);
       throw error;
     }
 
