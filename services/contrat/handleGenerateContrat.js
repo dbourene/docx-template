@@ -11,6 +11,7 @@ import { uploadToSupabase } from '../common/uploadToSupabase.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
 import { getUserInfo } from '../common/getUserInfo.js';
+import supabase from '../../lib/supabaseClient.js';
 import { sendEmail } from '../sendEmail.js';
 
 export const handleGenerateContrat = async (req, res) => {
@@ -132,6 +133,9 @@ export const handleGenerateContrat = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Erreur generation contrat:', error);
+    // ✅ Vérification si la réponse n'a pas déjà été envoyée
+    if (!res.headersSent) { 
     res.status(500).json({ success: false, message: error.message });
+    }
   }
 };
