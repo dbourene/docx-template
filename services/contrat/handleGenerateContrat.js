@@ -11,6 +11,7 @@ import { uploadToSupabase } from '../common/uploadToSupabase.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
 import { getUserInfo } from '../common/getUserInfo.js';
+import { sendEmail } from '../services/sendEmail.js';
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
@@ -93,7 +94,33 @@ export const handleGenerateContrat = async (req, res) => {
     // Étape 7 : Réponse client
     res.status(200).json({ success: true, url: publicUrl });
 
-    // Étape 8 : Nettoyage (optionnel)
+    // Étape 8 : Envoi de l'email de notification
+    const { data: producteurData, error: producteurError } = await supabase
+      .from('producteurs')
+      .select('contact_prenom')
+      .eq('id', producteur_id)
+      .single();
+
+    if (producteurError || !producteurData) {
+      throw new Error("Impossible de récupérer le prénom du producteur");
+    }
+
+    const prenomProducteur = producteurData.contact_prenom;
+    const emailSubject = `Contrat CPV généré pour ${userInfo.name}`;
+    const emailHtml = `<p>Bonjour ${prenomProducteur},</p>
+    <p>Votre contrat CPV est prêt à être signé.</p>
+    <p>Vous pouvez le signer depuis votre espace personnel.</p>
+    <p>Cordialement,</p>
+    <p>L'équipe de Kinjo</p>`;
+    console.log('📧 Envoi de l’email de notification...');
+
+    await sendEmail({
+      to: userInfo.email,
+      subject: emailSubject,
+      html: emailHtml
+    });
+
+    // Étape 9 : Nettoyage (optionnel)
     try {
       await fs.promises.unlink(docxPath);
       await fs.promises.unlink(pdfPath);
