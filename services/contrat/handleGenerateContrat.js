@@ -11,7 +11,7 @@ import { uploadToSupabase } from '../common/uploadToSupabase.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
 import { updateContratInDatabase } from './updateContratInDatabase.js';
 import { getUserInfo } from '../common/getUserInfo.js';
-import { sendEmail } from '../services/sendEmail.js';
+import { sendEmail } from '../sendEmail.js';
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
