@@ -64,8 +64,8 @@ export const handleGenerateContrat = async (req, res) => {
 
     // Étape 4 : Signature
     const userInfo = await getUserInfo(consommateur_id);
-    if (!userInfo) {
-      throw new Error('Utilisateur non trouvé dans consommateurs ou producteurs');
+    if (!userInfo || !userInfo.email || !userInfo.prenom) {
+      throw new Error('Utilisateur non trouvé ou email/prénom manquant dans consommateurs ou producteurs');
     }
     const signataire = {
       id: userInfo.user_id, // ← auth.users.id
@@ -96,27 +96,33 @@ export const handleGenerateContrat = async (req, res) => {
     res.status(200).json({ success: true, url: publicUrl });
 
     // Étape 8 : Envoi de l'email de notification
+    // Récupération du prénom du producteur pour personnaliser l'email
+    console.log('🔍 Récupération du prénom du producteur...');
     const { data: producteurData, error: producteurError } = await supabase
       .from('producteurs')
-      .select('contact_prenom')
+      .select('contact_prenom, contact_email')
       .eq('id', producteur_id)
       .single();
 
     if (producteurError || !producteurData) {
       throw new Error("Impossible de récupérer le prénom du producteur");
     }
-
+    console.log('✅ Prénom du producteur récupéré:', producteurData.contact_prenom);
+    
+    // Création du message de notification au producteur
+    console.log('📧 Envoi de l’email de notification au producteur...');
     const prenomProducteur = producteurData.contact_prenom;
-    const emailSubject = `Contrat CPV généré pour ${userInfo.name}`;
+    const emailProducteur = producteurData.contact_email;
+    const emailSubject = `Contrat CPV généré pour ${userInfo.prenom || 'un consommateur'} ${userInfo.nom || ''}`; 
     const emailHtml = `<p>Bonjour ${prenomProducteur},</p>
-    <p>Votre contrat CPV est prêt à être signé.</p>
+    <p>Votre contrat CPV a été signé par ${userInfo.prenom} ${userInfo.nom}.</p>
     <p>Vous pouvez le signer depuis votre espace personnel.</p>
     <p>Cordialement,</p>
     <p>L'équipe de Kinjo</p>`;
     console.log('📧 Envoi de l’email de notification...');
 
     await sendEmail({
-      to: userInfo.email,
+      to: emailProducteur,
       subject: emailSubject,
       html: emailHtml
     });
