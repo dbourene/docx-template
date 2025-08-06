@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import signPdf from '../common/signPdf.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
+import { sendEmail } from '../sendEmail.js';
 
 console.log('📥 Entrée dans handleSignatureProducteur');
 
@@ -12,6 +13,8 @@ dotenv.config();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 export const handleSignatureProducteur = async (req, res) => {
+
+  let consommateur_id; // Déclaré ici pour l'utiliser dans la fonction de signature
 
  // 🧾 LOGS DE DEBUG
   console.log('📩 Requête reçue pour signature producteur');
@@ -88,7 +91,7 @@ export const handleSignatureProducteur = async (req, res) => {
         error: 'Contrat non trouvé' 
       });
     }
-
+    consommateur_id = contratData.consommateur_id; // 👈 stocke l'ID du consommateur pour l'utiliser plus tard
     contrat = contratData;
     console.log('✅ Contrat récupéré:', contrat.id);
 
@@ -109,7 +112,7 @@ export const handleSignatureProducteur = async (req, res) => {
     console.log('🏭 Étape 3 : Vérification du producteur...');
     const { data: producteurData, error: prodError } = await supabase
       .from('producteurs')
-      .select('id')
+      .select('id, contact_prenom, contact_nom')
       .eq('user_id', user_id)
       .single();
 
@@ -306,6 +309,38 @@ export const handleSignatureProducteur = async (req, res) => {
     }
 
     console.log('✅ Contrat mis à jour en BDD pour le producteur');
+  
+    // Étape 10 : Envoi de l'email de notification
+    // Récupération du prénom du consommateur pour personnaliser l'email
+    const consommateurInfo = await getUserInfo(consommateur_id);
+
+    if (!consommateurInfo || consommateurInfo.role !== 'consommateur') {
+      throw new Error("Impossible de récupérer les informations du consommateur");
+    }
+
+    // Création du message de notification au consommateur
+
+    
+    console.log('✅ Informations du consommateur récupérées:', consommateurInfo);
+
+    const emailSubject = `Contrat de vente d'énergie locale signé par ${producteur.contact_prenom || 'un producteur'} ${producteur.contact_nom || ''}`;
+    const emailHtml = `
+      <p>Bonjour ${consommateurInfo.prenom},</p>
+      <p>Le contrat de vente d'énergie locale a été signé par ${producteur.contact_prenom} ${producteur.contact_nom}.</p>
+      <p>Vous pouvez le signer depuis votre espace personnel.</p>
+      <p>Cordialement,</p>
+      <p>L'équipe de Kinjo</p>
+    `;
+
+    console.log('📧 Envoi de l’email de notification...');
+
+    await sendEmail({
+      to: 'dbourene@audencia.com', // temporairement pour test
+      // to: emailConsommateur,
+      subject: emailSubject,
+      html: emailHtml
+    });
+
 
     return res.status(200).json({
       success: true,
@@ -315,10 +350,11 @@ export const handleSignatureProducteur = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Erreur dans l\'étape 9 (mise à jour contrat):', error);
+    console.error('❌ Erreur dans l\'étape 9 (mise à jour contrat) ou 10 (envoi email):', error);
     return res.status(500).json({ 
       success: false,
-      error: 'Erreur lors de la mise à jour du contrat' 
+      error: 'Erreur lors de la finalisation de la signature du contrat' 
     });
   }
+
 };

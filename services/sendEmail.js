@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function sendEmail({ to, subject, html }) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'TonNom <onboarding@resend.dev>', // À personnaliser avec un domaine vérifié plus tard
+      from: 'Kinjo <onboarding@resend.dev>', // À personnaliser avec un domaine vérifié plus tard
       to,
       subject,
       html,

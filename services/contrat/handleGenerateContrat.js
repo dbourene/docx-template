@@ -113,9 +113,9 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📧 Envoi de l’email de notification au producteur...');
     const prenomProducteur = producteurData.contact_prenom;
     const emailProducteur = producteurData.contact_email;
-    const emailSubject = `Contrat CPV généré pour ${userInfo.prenom || 'un consommateur'} ${userInfo.nom || ''}`; 
+    const emailSubject = `Contrat de vente d'énergie locale signé par ${userInfo.prenom || 'un consommateur'} ${userInfo.nom || ''}`; 
     const emailHtml = `<p>Bonjour ${prenomProducteur},</p>
-    <p>Votre contrat CPV a été signé par ${userInfo.prenom} ${userInfo.nom}.</p>
+    <p>Votre contrat de vente d'énergie locale a été signé par ${userInfo.prenom} ${userInfo.nom}.</p>
     <p>Vous pouvez le signer depuis votre espace personnel.</p>
     <p>Cordialement,</p>
     <p>L'équipe de Kinjo</p>`;
