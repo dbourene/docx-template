@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import signPdf from '../common/signPdf.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
+import { getUserInfo } from '../common/getUserInfo.js';
 import { sendEmail } from '../sendEmail.js';
 
 console.log('📥 Entrée dans handleSignatureProducteur');
