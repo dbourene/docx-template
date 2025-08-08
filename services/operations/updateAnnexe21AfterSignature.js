@@ -38,7 +38,7 @@ export async function updateAnnexe21AfterSignature(contratId) {
     // Étape 2 : Récupérer les infos du consommateur
     const { data: consommateur, error: consError } = await supabase
         .from('consommateurs')
-        .select('prm, type, contact_prenom, contact_nom, denominationUniteLegale, adresse')
+        .select('prm, type, contact_prenom, contact_nom, denominationUniteLegale, adresse, siret')
         .eq('id', consommateurId)
         .maybeSingle();
 
