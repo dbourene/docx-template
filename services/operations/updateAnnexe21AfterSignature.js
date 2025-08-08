@@ -51,7 +51,7 @@ export async function updateAnnexe21AfterSignature(contratId) {
             ? `${consommateur.contact_prenom} ${consommateur.contact_nom}`
             : consommateur.denominationUniteLegale;
 
-    console.log(`📄 Données à injecter : PRM=${consommateur.prm}, Titulaire=${titulaire}, Adresse=${consommateur.adresse}`);
+    console.log(`📄 Données à injecter : PRM=${consommateur.prm}, Titulaire=${titulaire}, Adresse=${consommateur.adresse}, SIRET=${consommateur.siret}`);
 
     // Étape 3 : Récupération de l'opération (pour obtenir l'url_annexe21)
     const { data: operation, error: opError } = await supabase
@@ -101,8 +101,9 @@ export async function updateAnnexe21AfterSignature(contratId) {
         if (typeof cell.value === 'string') {
           cell.value = cell.value
             .replace('{{consommateurs.prm}}', consommateur.prm || '')
-            .replace('{{consommateurs.titulaire}}', consommateur.titulaire || '')
-            .replace('{{consommateurs.adresse}}', consommateur.adresse || '');
+            .replace('{{consommateurs.titulaire}}', titulaire || '')
+            .replace('{{consommateurs.adresse}}', consommateur.adresse || '')
+            .replace('{{consommateurs.siret}}', consommateur.siret || '');
         }
       });
     });
