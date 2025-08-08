@@ -39,14 +39,16 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
-
-// ✅ Gestion du signal SIGTERM
-process.on('SIGTERM', () => {
-  console.log('🛑 Signal SIGTERM reçu. Fermeture du serveur proprement...');
-  process.exit(0);
+// ✅ Lancer le serveur et garder la référence pour un arrêt propre
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
 });
 
-// Lancer le serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
+// ✅ Gestion du signal SIGTERM proprement
+process.on('SIGTERM', () => {
+  console.log('🛑 Signal SIGTERM reçu. Fermeture du serveur proprement...');
+  server.close(() => {
+    console.log('✅ Serveur arrêté proprement');
+    process.exit(0);
+  });
 });
