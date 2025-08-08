@@ -13,6 +13,7 @@ import { updateContratInDatabase } from './updateContratInDatabase.js';
 import { getUserInfo } from '../common/getUserInfo.js';
 import supabase from '../../lib/supabaseClient.js';
 import { sendEmail } from '../sendEmail.js';
+import { updateAnnexe21AfterSignature } from '../common/updateAnnexe21AfterSignature.js'
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
@@ -89,6 +90,16 @@ export const handleGenerateContrat = async (req, res) => {
       url_document: publicUrl
     });
 
+    // 🔄 Mise à jour du fichier annexe21 lié à l'opération
+    try {
+      console.log('📂 Mise à jour du fichier annexe21...');
+      await updateAnnexe21AfterSignature(contrat_id);
+      console.log('✅ Fichier annexe21 mis à jour avec succès.');
+    } catch (err) {
+      console.error('⚠️ Erreur lors de la mise à jour du fichier annexe21:', err);
+    }
+
+    // Enregistrement de l'URL publique dans la BDD
     console.log('🎉 Contrat généré et signé avec succès!');
     console.log('🔗 URL:', publicUrl);
 

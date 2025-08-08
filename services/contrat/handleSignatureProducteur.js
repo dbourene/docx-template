@@ -328,7 +328,8 @@ export const handleSignatureProducteur = async (req, res) => {
     const emailHtml = `
       <p>Bonjour ${consommateurInfo.prenom},</p>
       <p>Le contrat de vente d'énergie locale a été signé par ${producteur.contact_prenom} ${producteur.contact_nom}.</p>
-      <p>Vous pouvez le signer depuis votre espace personnel.</p>
+      <p>Il prendra effet au plus tard dans 15 jours (si vous avez refusé le délai légal de rétractation), dans 30 jours (si vous avez accepté le délai légal de rétractation).</p>
+      <p>Vous serez informé prochainement par email de la date définitive d'effet du contrat.</p>
       <p>Cordialement,</p>
       <p>L'équipe de Kinjo</p>
     `;
