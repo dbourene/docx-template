@@ -3,8 +3,7 @@
 import ExcelJS from 'exceljs';
 import path from 'path';
 import fs from 'fs/promises';
-import supabase from '../lib/supabaseClient.js';
-import { getUserInfo } from '../common/getUserInfo.js';
+import supabase from '../../lib/supabaseClient.js';
 
 /**
  * Met à jour le fichier annexe21 dans Supabase Storage après signature du consommateur.
