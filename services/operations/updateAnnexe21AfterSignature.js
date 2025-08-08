@@ -2,7 +2,7 @@
 
 import ExcelJS from 'exceljs';
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs';
 import supabase from '../../lib/supabaseClient.js';
 
 /**
@@ -82,7 +82,7 @@ export async function updateAnnexe21AfterSignature(contratId) {
     // Sauvegarder temporairement le fichier téléchargé
     const tempFilePath = path.join('/tmp', 'annexe21.xlsx');
     const buffer = await fileData.arrayBuffer();
-    fs.writeFileSync(tempFilePath, Buffer.from(buffer));
+    fs.promises.writeFile(tempFilePath, Buffer.from(buffer));
     console.log(`💾 Fichier temporaire sauvegardé: ${tempFilePath}`);
 
     // Étape 6 : Charger le fichier Excel en mémoire avec ExcelJS
@@ -114,7 +114,7 @@ export async function updateAnnexe21AfterSignature(contratId) {
     console.log(`💾 Fichier modifié temporairement sauvegardé dans ${updatedFilePath}`);
 
     // Étape 9 : Reupload dans Supabase Storage
-    const fileBuffer = fs.readFileSync(updatedFilePath);
+    const fileBuffer = await fs.promises.readFile(updatedFilePath);
     const { error: uploadErr } = await supabase.storage
       .from('annexes21')
       .upload(storagePath.replace(/^annexes21\//, ''), fileBuffer, {
@@ -129,7 +129,7 @@ export async function updateAnnexe21AfterSignature(contratId) {
     console.log(`✅ Fichier Excel mis à jour et remplacé dans Supabase Storage`);
 
     // Étape 10 : Suppression du fichier temporaire
-    await fs.unlink(tmpPath);
+    await fs.promises.unlink(updatedFilePath);
 
   } catch (err) {
     console.error('❌ Erreur dans updateAnnexe21AfterSignature:', err.message);
