@@ -35,8 +35,8 @@ export async function sendAnnexe21OrNotification(contratId) {
     console.log(`[sendAnnexe21OrNotification] Producteur:`, producteur);
     console.log(`[sendAnnexe21OrNotification] Consommateur:`, consommateur);
 
-    // 3. Cas délai légal → mail producteur uniquement
-     const { data: installation, error: instErr } = await supabase
+    // 3. Récupération infos installation
+    const { data: installation, error: instErr } = await supabase
       .from('installations')
       .select('id, nom, adresse, code_postal, ville')
       .eq('id', installation_id)
@@ -53,7 +53,7 @@ export async function sendAnnexe21OrNotification(contratId) {
       return { message: 'Notification délai légal envoyée' };
     }
 
-    // 3. Récupération mail ENEDIS
+    // 4. Récupération mail ENEDIS
     const { data: enedis, error: enedisErr } = await supabase
       .from('coordonnees_enedis')
       .select('mail_acc_enedis')
@@ -62,18 +62,11 @@ export async function sendAnnexe21OrNotification(contratId) {
     if (enedisErr) throw enedisErr;
     console.log('[Annexe21] Mail ENEDIS récupéré :', enedis.mail_acc_enedis);
 
-    // 4. Récupération commune depuis installation
-    const { data: installationAdresse, error: instAddrErr } = await supabase
-      .from('installations')
-      .select('adresse')
-      .eq('id', installation_id)
-      .single();
-    if (instAddrErr) throw instAddrErr;
-    console.log('[Annexe21] Adresse installation récupérée :', installationAdresse.adresse);
-    const adresseParts = installationAdresse.adresse.split(',');
+    // 5. Récupération commune depuis installation
+    const adresseParts = installation.adresse.split(',');
     const commune = adresseParts[adresseParts.length - 1].trim();
 
-    // 5. Renommage Annexe 21 dans Supabase (optimisé avec move)
+    // 6. Renommage Annexe 21 dans Supabase (optimisé avec move)
     console.log('[Annexe21] Début renommage dans Supabase...');
 
     const today = format(new Date(), 'yyyyMMdd');
@@ -129,7 +122,7 @@ export async function sendAnnexe21OrNotification(contratId) {
 
     console.log('[Annexe21] URL mise à jour dans la table operations.');
 
-    // 6. Envoi mail ENEDIS avec PJ
+    // 7. Envoi mail ENEDIS avec PJ
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : enedis.mail_acc_enedis,
       subject: `Déclaration préalable d'ACC sur la commune de ${commune}`,
@@ -145,7 +138,7 @@ export async function sendAnnexe21OrNotification(contratId) {
       ]
     });
 
-    // 7. Envoi notifications producteur & consommateur
+    // 8. Envoi notifications producteur & consommateur
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : producteur.email,
       subject: 'Traitement du contrat en cours',
@@ -159,7 +152,7 @@ export async function sendAnnexe21OrNotification(contratId) {
              Une date de mise en service vous sera communiquée dans les prochains jours.`
     });
 
-    // 8. Mise à jour tables contrats et operations
+    // 9. Mise à jour tables contrats et operations
     const todayISO = new Date().toISOString();
     await supabase.from('contrats').update({ statut: 'attente_mes' }).eq('id', contratId);
     await supabase.from('operations').update({
