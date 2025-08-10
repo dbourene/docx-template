@@ -6,6 +6,8 @@ import signPdf from '../common/signPdf.js';
 import { determineStatutContrat } from './determineStatutContrat.js';
 import { getUserInfo } from '../common/getUserInfo.js';
 import { sendEmail } from '../sendEmail.js';
+import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js';
+import { sendAnnexe21OrNotification } from './sendAnnexe21OrNotification.js';
 
 console.log('📥 Entrée dans handleSignatureProducteur');
 
@@ -310,8 +312,18 @@ export const handleSignatureProducteur = async (req, res) => {
     }
 
     console.log('✅ Contrat mis à jour en BDD pour le producteur');
-  
-    // Étape 10 : Envoi de l'email de notification
+
+    // Étape 10 : Mise à jour de la dénommination du fichier annexe 21
+    console.log(`📄 Lancement de la mise à jour de l'annexe 21 pour le contrat ${contrat_id}...`);
+    await updateAnnexe21AfterSignature(contrat_id);
+    console.log(`✅ Annexe 21 mise à jour avec succès pour le contrat ${contrat_id}`);
+
+    // Étape 11 : Envoi de l'annexe 21 à ENEDIS ou de l'email de notification
+    console.log(`📧 Envoi de l'annexe 21 ou notification pour le contrat ${contrat_id}...`);
+    await sendAnnexe21OrNotification(contrat_id);
+    console.log(`✅ Annexe 21 ou notification envoyée pour le contrat ${contrat_id}`);
+
+    // Étape 12 : Envoi de l'email de notification
     // Récupération du prénom du consommateur pour personnaliser l'email
     const consommateurInfo = await getUserInfo(consommateur_id);
 
@@ -320,8 +332,7 @@ export const handleSignatureProducteur = async (req, res) => {
     }
 
     // Création du message de notification au consommateur
-
-    
+  
     console.log('✅ Informations du consommateur récupérées:', consommateurInfo);
 
     const emailSubject = `Contrat de vente d'énergie locale signé par ${producteur.contact_prenom || 'un producteur'} ${producteur.contact_nom || ''}`;
@@ -334,16 +345,14 @@ export const handleSignatureProducteur = async (req, res) => {
       <p>L'équipe de Kinjo</p>
     `;
 
-    console.log('📧 Envoi de l’email de notification...');
+    console.log('📧 Envoi de l’email de notification à', consommateurInfo.email);
 
     await sendEmail({
-      to: 'dbourene@audencia.com', // temporairement pour test
-      // to: emailConsommateur,
+      to: 'dbourene@audencia.com', // temporairement pour test à remplacer par to: consommateurInfo.email
       subject: emailSubject,
       html: emailHtml
     });
-
-
+    console.log('✅ Email de notification envoyé au consommateur');
     return res.status(200).json({
       success: true,
       message: 'Contrat signé par le producteur',

@@ -133,7 +133,7 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📧 Envoi de l’email de notification...');
 
     await sendEmail({
-      to: emailProducteur,
+      to: 'dbourene@audencia.com', // temporairement puis remplacer par : emailProducteur,
       subject: emailSubject,
       html: emailHtml
     });
