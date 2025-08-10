@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "docx-templates": "^4.14.1",
     "dotenv": "^16.3.1",
     "exceljs": "^4.4.0",
