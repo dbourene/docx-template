@@ -7,25 +7,41 @@ import { sendEmail } from '../sendEmail.js';
 
 export async function sendAnnexe21OrNotification(contratId) {
   try {
-    // 1. Récupération infos contrat, producteur, consommateur, installation, operation, ENEDIS
+     console.log(`[sendAnnexe21OrNotification] Début traitement pour contrat ${contratId}`);
+    
+     // 1. Récupération infos contrat, producteur, consommateur, installation, operation, ENEDIS
     const { data: contrat, error: contratErr } = await supabase
       .from('contrats')
       .select(`
         id,
         statut,
         created_at,
-        producteur:users!contrats_producteur_id_fkey(prenom, email),
-        consommateur:users!contrats_consommateur_id_fkey(prenom),
+        producteur_id,
+        consommateur_id,
         installation_id,
         operations(id, url_annexe21, id_acc_enedis)
       `)
       .eq('id', contratId)
       .single();
     if (contratErr) throw contratErr;
+    console.log('[sendAnnexe21OrNotification] Contrat récupéré :', contrat);
 
-    const { producteur, consommateur, statut, created_at, installation_id, operations } = contrat;
+    const { producteur_id, consommateur_id, statut, created_at, installation_id, operations } = contrat;
 
-    // 2. Cas délai légal → mail producteur uniquement
+    // 2. Récupération infos producteur et consommateur
+    const producteur = await getUserInfo(producteur_id);
+    const consommateur = await getUserInfo(consommateur_id);
+
+    console.log(`[sendAnnexe21OrNotification] Producteur:`, producteur);
+    console.log(`[sendAnnexe21OrNotification] Consommateur:`, consommateur);
+
+    // 3. Cas délai légal → mail producteur uniquement
+     const { data: installation, error: instErr } = await supabase
+      .from('installations')
+      .select('id, nom, adresse, code_postal, ville')
+      .eq('id', installation_id)
+      .single();   
+
     if (statut === 'attente_delai_legal') {
       const dateFinDelai = format(new Date(new Date(created_at).setDate(new Date(created_at).getDate() + 15)), 'dd/MM/yyyy');
       await sendEmail({
@@ -47,13 +63,14 @@ export async function sendAnnexe21OrNotification(contratId) {
     console.log('[Annexe21] Mail ENEDIS récupéré :', enedis.mail_acc_enedis);
 
     // 4. Récupération commune depuis installation
-    const { data: installation, error: instErr } = await supabase
+    const { data: installationAdresse, error: instAddrErr } = await supabase
       .from('installations')
       .select('adresse')
       .eq('id', installation_id)
       .single();
-    if (instErr) throw instErr;
-    const adresseParts = installation.adresse.split(',');
+    if (instAddrErr) throw instAddrErr;
+    console.log('[Annexe21] Adresse installation récupérée :', installationAdresse.adresse);
+    const adresseParts = installationAdresse.adresse.split(',');
     const commune = adresseParts[adresseParts.length - 1].trim();
 
     // 5. Renommage Annexe 21 dans Supabase (optimisé avec move)
