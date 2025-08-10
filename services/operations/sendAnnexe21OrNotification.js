@@ -41,8 +41,15 @@ export async function sendAnnexe21OrNotification(contratId) {
       .from('installations')
       .select('id, nom, adresse, code_postal, ville')
       .eq('id', installation_id)
-      .single();   
+      .single();
+    console.log(`[sendAnnexe21OrNotification] Installation:`, installation);
 
+    if (!installation) {
+      console.warn(`[sendAnnexe21OrNotification] Installation non trouvée pour l'ID : ${installation_id}`);
+      return { message: 'Installation non trouvée' };
+    }
+    if (instErr) throw instErr;
+    
     if (statut === 'attente_delai_legal') {
       const dateFinDelai = format(new Date(new Date(created_at).setDate(new Date(created_at).getDate() + 15)), 'dd/MM/yyyy');
       await sendEmail({
@@ -64,9 +71,22 @@ export async function sendAnnexe21OrNotification(contratId) {
     console.log('[Annexe21] Mail ENEDIS récupéré :', enedis.mail_acc_enedis);
 
     // 5. Récupération commune depuis installation
-    const adresseParts = installation.adresse.split(',');
-    const commune = adresseParts[adresseParts.length - 1].trim();
+    
+    const commune = extraireCommune(installation.adresse);
+    if (!commune) {
+      console.warn(`[sendAnnexe21OrNotification] Impossible d'extraire la commune depuis l'adresse : "${installation.adresse}"`);
+    }
+    console.log(`[sendAnnexe21OrNotification] Commune extraite : ${commune}`);
 
+    function extraireCommune(adresse) {
+      const regex = /\b(\d{5})\b\s*(.+)$/;
+      const match = adresse.match(regex);
+      if (match) {
+        return match[2].trim();
+      }
+      return null;
+    }
+    
     // 6. Renommage Annexe 21 dans Supabase (optimisé avec move)
     console.log('[Annexe21] Début renommage dans Supabase...');
 
