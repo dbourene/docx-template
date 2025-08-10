@@ -7,7 +7,7 @@ import { determineStatutContrat } from './determineStatutContrat.js';
 import { getUserInfo } from '../common/getUserInfo.js';
 import { sendEmail } from '../sendEmail.js';
 import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js';
-import { sendAnnexe21OrNotification } from './sendAnnexe21OrNotification.js';
+import { sendAnnexe21OrNotification } from '../operations/sendAnnexe21OrNotification.js';
 
 console.log('📥 Entrée dans handleSignatureProducteur');
 
