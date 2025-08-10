@@ -5,7 +5,7 @@ import { fr } from 'date-fns/locale';
 import { sendEmail } from '../sendEmail.js';
 
 
-async function sendAnnexe21OrNotification(contratId) {
+export async function sendAnnexe21OrNotification(contratId) {
   try {
     // 1. Récupération infos contrat, producteur, consommateur, installation, operation, ENEDIS
     const { data: contrat, error: contratErr } = await supabase
@@ -157,5 +157,3 @@ async function sendAnnexe21OrNotification(contratId) {
     throw err;
   }
 }
-
-module.exports = { sendAnnexe21OrNotification };
