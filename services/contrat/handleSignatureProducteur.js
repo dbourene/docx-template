@@ -314,14 +314,22 @@ export const handleSignatureProducteur = async (req, res) => {
     console.log('✅ Contrat mis à jour en BDD pour le producteur');
 
     // Étape 10 : Mise à jour de la dénommination du fichier annexe 21
-    console.log(`📄 Lancement de la mise à jour de l'annexe 21 pour le contrat ${contrat_id}...`);
-    await updateAnnexe21AfterSignature(contrat_id);
-    console.log(`✅ Annexe 21 mise à jour avec succès pour le contrat ${contrat_id}`);
+    try {
+      console.log(`📄 Lancement de la mise à jour de l'annexe 21 pour le contrat ${contrat_id}...`);
+      await updateAnnexe21AfterSignature(contrat_id);
+      console.log(`✅ Annexe 21 mise à jour avec succès pour le contrat ${contrat_id}`);
+  } catch (error) {
+    console.error(`❌ Erreur lors de la mise à jour de l'annexe 21 pour le contrat ${contrat_id} :`, error);
+  }
 
     // Étape 11 : Envoi de l'annexe 21 à ENEDIS ou de l'email de notification
-    console.log(`📧 Envoi de l'annexe 21 ou notification pour le contrat ${contrat_id}...`);
-    await sendAnnexe21OrNotification(contrat_id);
-    console.log(`✅ Annexe 21 ou notification envoyée pour le contrat ${contrat_id}`);
+    try {
+      console.log(`📨 Envoi de l'annexe 21 ou notification pour le contrat ${contrat_id}...`);
+      await sendAnnexe21OrNotification(contrat_id);
+      console.log(`✅ Annexe 21 ou notification envoyée pour le contrat ${contrat_id}`);
+    } catch (error) {
+      console.error(`❌ Erreur lors de l'envoi de l'annexe 21 ou de la notification pour le contrat ${contrat_id} :`, error);
+    }
 
     // Étape 12 : Envoi de l'email de notification
     // Récupération du prénom du consommateur pour personnaliser l'email
@@ -353,6 +361,8 @@ export const handleSignatureProducteur = async (req, res) => {
       html: emailHtml
     });
     console.log('✅ Email de notification envoyé au consommateur');
+
+    // Retourner la réponse
     return res.status(200).json({
       success: true,
       message: 'Contrat signé par le producteur',
