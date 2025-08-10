@@ -3,6 +3,7 @@ import path from 'path';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { sendEmail } from '../sendEmail.js';
+import { getUserInfo } from '../common/getUserInfo.js';
 
 
 export async function sendAnnexe21OrNotification(contratId) {
