@@ -5,6 +5,7 @@ import { fr } from 'date-fns/locale';
 import { sendEmail } from '../sendEmail.js';
 import { getUserInfo } from '../common/getUserInfo.js';
 import { type } from 'os';
+import { response } from 'express';
 
 
 export async function sendAnnexe21OrNotification(contratId) {
@@ -148,12 +149,16 @@ export async function sendAnnexe21OrNotification(contratId) {
     }
 
     const fileData = Buffer.from(await downloadedFile.arrayBuffer());
+    const fileBase64 = fileData.toString('base64');
 
-    console.log('Taille PJ :', fileData?.length);
-    console.log('Type fileData :', typeof fileData);
-    console.log('Extrait début :', fileData?.toString('base64')?.slice(0, 50));
+    console.log(`[DEBUG] Nom fichier PJ : ${newFileName}`);
+    console.log(`[DEBUG] Taille de la PJ dans le buffer : ${fileData?.length}`);
+    console.log(`[DEBUG] Type fileData : ${typeof fileData}`);
+    console.log(`[DEBUG] Base64 extrait du début : ${fileBase64?.substring(0, 50)}`);
 
+    
     // Envoi du mail avec la PJ
+    console.log('[Annexe21] Envoi du mail à ENEDIS avec la PJ...');    
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : enedis.mail_acc_enedis,
       subject: `Déclaration préalable d'ACC sur la commune de ${installation.commune}`,
@@ -164,13 +169,15 @@ export async function sendAnnexe21OrNotification(contratId) {
       attachments: [
         {
           filename: newFileName,
-          content: fileData.toString('base64'),
+          content: fileBase64,
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           disposition: 'attachment'
         }
       ]
     });
 
+    console.log('[Annexe21] Mail à ENEDIS avec ID :', response.id);
+    
     // 8. Envoi notifications producteur & consommateur
 
     // Attendre 1 seconde avant d'envoyer au producteur
