@@ -37,6 +37,7 @@ export async function sendAnnexe21OrNotification(contratId) {
     console.log(`[sendAnnexe21OrNotification] Consommateur:`, consommateur);
 
     // 3. Récupération infos installation
+    console.log(`[sendAnnexe21OrNotification] Récupération infos installation pour ID: ${installation_id}`);
     const { data: installation, error: instErr } = await supabase
       .from('installations')
       .select('id, nom, adresse, code_postal, ville')
@@ -44,11 +45,12 @@ export async function sendAnnexe21OrNotification(contratId) {
       .single();
     console.log(`[sendAnnexe21OrNotification] Installation:`, installation);
 
-    if (!installation) {
-      console.warn(`[sendAnnexe21OrNotification] Installation non trouvée pour l'ID : ${installation_id}`);
-      return { message: 'Installation non trouvée' };
+    if (instErr) {
+      console.error('[sendAnnexe21OrNotification] Erreur Supabase installations:', instErr);
+    } else if (!installation) {
+      console.warn('[sendAnnexe21OrNotification] ⚠️ Aucune installation trouvée pour cet ID');
     }
-    if (instErr) throw instErr;
+    console.log(`[sendAnnexe21OrNotification] Installation:`, installation);
     
     if (statut === 'attente_delai_legal') {
       const dateFinDelai = format(new Date(new Date(created_at).setDate(new Date(created_at).getDate() + 15)), 'dd/MM/yyyy');
