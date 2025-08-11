@@ -80,9 +80,9 @@ export async function updateAnnexe21AfterSignature(contratId) {
     }
     
     // Sauvegarder temporairement le fichier téléchargé
-    const tempFilePath = path.join('/tmp', 'annexe21.xlsx');
+    const tempFilePath = path.join('/tmp', `annexe21_${Date.now()}.xlsx`);
     const buffer = await fileData.arrayBuffer();
-    fs.promises.writeFile(tempFilePath, Buffer.from(buffer));
+    await fs.promises.writeFile(tempFilePath, Buffer.from(buffer));
     console.log(`💾 Fichier temporaire sauvegardé: ${tempFilePath}`);
 
     // Étape 6 : Charger le fichier Excel en mémoire avec ExcelJS
