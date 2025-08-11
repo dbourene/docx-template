@@ -40,7 +40,7 @@ export async function sendAnnexe21OrNotification(contratId) {
     console.log(`[sendAnnexe21OrNotification] Récupération infos installation pour ID: ${installation_id}`);
     const { data: installation, error: instErr } = await supabase
       .from('installations')
-      .select('id, nom, adresse, code_postal, ville')
+      .select('id, commune')
       .eq('id', installation_id)
       .single();
     console.log(`[sendAnnexe21OrNotification] Installation:`, installation);
@@ -72,24 +72,8 @@ export async function sendAnnexe21OrNotification(contratId) {
     if (enedisErr) throw enedisErr;
     console.log('[Annexe21] Mail ENEDIS récupéré :', enedis.mail_acc_enedis);
 
-    // 5. Récupération commune depuis installation
-    
-    const commune = extraireCommune(installation.adresse);
-    if (!commune) {
-      console.warn(`[sendAnnexe21OrNotification] Impossible d'extraire la commune depuis l'adresse : "${installation.adresse}"`);
-    }
-    console.log(`[sendAnnexe21OrNotification] Commune extraite : ${commune}`);
-
-    function extraireCommune(adresse) {
-      const regex = /\b(\d{5})\b\s*(.+)$/;
-      const match = adresse.match(regex);
-      if (match) {
-        return match[2].trim();
-      }
-      return null;
-    }
-    
-    // 6. Renommage Annexe 21 dans Supabase (optimisé avec move)
+        
+    // 5. Renommage Annexe 21 dans Supabase (optimisé avec move)
     console.log('[Annexe21] Début renommage dans Supabase...');
 
     const today = format(new Date(), 'yyyyMMdd');
@@ -145,10 +129,10 @@ export async function sendAnnexe21OrNotification(contratId) {
 
     console.log('[Annexe21] URL mise à jour dans la table operations.');
 
-    // 7. Envoi mail ENEDIS avec PJ
+    // 6. Envoi mail ENEDIS avec PJ
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : enedis.mail_acc_enedis,
-      subject: `Déclaration préalable d'ACC sur la commune de ${commune}`,
+      subject: `Déclaration préalable d'ACC sur la commune de ${installation.commune}`,
       html: `Bonjour,<br><br>
         En tant que mandataire de la PMO de Kinjo, vous trouverez en PJ l’annexe 2.1 contenant l’ensemble des renseignements nécessaires à l’établissement de la convention d’ACC.<br><br>
         Je vous serais reconnaissant de me communiquer en retour, au mail en signature, un numéro d’opération d’ACC ainsi que le projet de convention.<br><br>
