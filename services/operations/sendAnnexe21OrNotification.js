@@ -130,6 +130,20 @@ export async function sendAnnexe21OrNotification(contratId) {
     console.log('[Annexe21] URL mise à jour dans la table operations.');
 
     // 6. Envoi mail ENEDIS avec PJ
+    
+    // Télécharger le fichier renommé depuis Supabase à joindre au mail
+    const { data: downloadedFile, error: downloadErr } = await supabase
+      .storage
+      .from(bucket)
+      .download(newPath);
+
+    if (downloadErr) {
+      throw new Error(`Erreur téléchargement Annexe 21 : ${downloadErr.message}`);
+    }
+
+    const fileData = Buffer.from(await downloadedFile.arrayBuffer());
+
+    // Envoi du mail avec la PJ
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : enedis.mail_acc_enedis,
       subject: `Déclaration préalable d'ACC sur la commune de ${installation.commune}`,
