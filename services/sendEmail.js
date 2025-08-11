@@ -5,13 +5,14 @@ dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendEmail({ to, subject, html }) {
+export async function sendEmail({ to, subject, html, attachments }) {
   try {
     const { data, error } = await resend.emails.send({
       from: 'Kinjo <onboarding@resend.dev>', // À personnaliser avec un domaine vérifié plus tard
       to,
       subject,
       html,
+      attachments,
     });
 
     if (error) {
