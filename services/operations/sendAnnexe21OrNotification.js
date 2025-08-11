@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { sendEmail } from '../sendEmail.js';
 import { getUserInfo } from '../common/getUserInfo.js';
+import { type } from 'os';
 
 
 export async function sendAnnexe21OrNotification(contratId) {
@@ -131,7 +132,7 @@ export async function sendAnnexe21OrNotification(contratId) {
 
     // 6. Envoi mail ENEDIS avec PJ
     
-    // Télécharger le fichier renommé depuis Supabase à joindre au mail
+   // Télécharger le fichier renommé depuis Supabase à joindre au mail
     const { data: downloadedFile, error: downloadErr } = await supabase
       .storage
       .from(bucket)
@@ -141,7 +142,16 @@ export async function sendAnnexe21OrNotification(contratId) {
       throw new Error(`Erreur téléchargement Annexe 21 : ${downloadErr.message}`);
     }
 
+    // Fonction pour créer un délai entre l'envoi des emails
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     const fileData = Buffer.from(await downloadedFile.arrayBuffer());
+
+    console.log('Taille PJ :', fileData?.length);
+    console.log('Type fileData :', typeof fileData);
+    console.log('Extrait début :', fileData?.toString('base64')?.slice(0, 50));
 
     // Envoi du mail avec la PJ
     await sendEmail({
@@ -154,18 +164,26 @@ export async function sendAnnexe21OrNotification(contratId) {
       attachments: [
         {
           filename: newFileName,
-          content: fileData
+          content: fileData.toString('base64'),
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          disposition: 'attachment'
         }
       ]
     });
 
     // 8. Envoi notifications producteur & consommateur
+
+    // Attendre 1 seconde avant d'envoyer au producteur
+    await delay(1000);
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : producteur.email,
       subject: 'Traitement du contrat en cours',
       html: `Bonjour ${producteur.prenom},<br><br>Nous avons le plaisir de vous informer que votre contrat est cours de traitement. 
              Une date de mise en service vous sera communiquée dans les prochains jours.`
     });
+    
+    // Attendre 1 seconde avant d'envoyer au consommateur
+    await delay(1000);
     await sendEmail({
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : consommateur.email,
       subject: 'Traitement du contrat en cours',
