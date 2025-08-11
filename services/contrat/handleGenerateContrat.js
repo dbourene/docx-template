@@ -127,7 +127,7 @@ export const handleGenerateContrat = async (req, res) => {
     const emailSubject = `Contrat de vente d'énergie locale signé par ${userInfo.prenom || 'un consommateur'} ${userInfo.nom || ''}`; 
     const emailHtml = `<p>Bonjour ${prenomProducteur},</p>
     <p>Votre contrat de vente d'énergie locale a été signé par ${userInfo.prenom} ${userInfo.nom}.</p>
-    <p>Vous pouvez le signer depuis votre espace personnel.</p>
+    <p>Vous pouvez le signer depuis votre espace personnel en cliquant sur "Mes consommateurs".</p>
     <p>Cordialement,</p>
     <p>L'équipe de Kinjo</p>`;
     console.log('📧 Envoi de l’email de notification...');
