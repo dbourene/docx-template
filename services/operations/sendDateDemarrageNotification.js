@@ -71,11 +71,11 @@ export async function sendDateDemarrageNotification(operationId) {
     } else {
       await sendEmail({
         to: 'dbourene@audencia.com', // temporairement puis remplacer par producteurInfo.email,
-        subject: `Confirmation date de mise en service - ACC ${numeroAcc}`,
+        subject: `Confirmation date de mise en service - ACC ${operation.numero_acc}`,
         html: `
-          <p>Bonjour ${producteurInfo?.name || ''},</p>
-          <p>La date de mise en service pour l'ACC <strong>${numeroAcc}</strong> a été confirmée.</p>
-          <p>Date de démarrage : <strong>${startDate}</strong></p>
+          <p>Bonjour ${producteur?.name || ''},</p>
+          <p>La date de mise en service pour l'ACC <strong>${operation.numero_acc}</strong> a été confirmée.</p>
+          <p>Date de démarrage : <strong>${operation.start_date}</strong></p>
           <p>Cordialement,<br>L'équipe Kinjo</p>
         `
       });
@@ -94,11 +94,11 @@ export async function sendDateDemarrageNotification(operationId) {
       if (!consommateur?.contact_email) continue;
       await sendEmail({
         to: 'dbourene@audencia.com', // temporairement puis remplacer par consommateur.contact_email,
-        subject: `Confirmation de date de mise en service - ACC ${numeroAcc}`,
+        subject: `Confirmation de date de mise en service - ACC ${operation.numero_acc}`,
         html: `
           <p>Bonjour ${consommateur.contact_prenom || ''},</p>
-          <p>La date de mise en service pour l'ACC <strong>${numeroAcc}</strong> a été confirmée.</p>
-          <p>Date de démarrage : <strong>${startDate}</strong></p>
+          <p>La date de mise en service pour l'ACC <strong>${operation.numero_acc}</strong> a été confirmée.</p>
+          <p>Date de démarrage : <strong>${operation.start_date}</strong></p>
           <p>Cordialement,<br>L'équipe Kinjo</p>
         `
       });
