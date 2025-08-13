@@ -1,7 +1,6 @@
 // services/operations/sendDateDemarrageNotification.js
 import supabase from '../../lib/supabaseClient.js';
 import {sendEmail} from '../sendEmail.js';
-import {getUserInfo} from '../common/getUserInfo.js';
 
 /**
  * Envoie une notification "Confirmation date de mise en service"
@@ -10,67 +9,107 @@ import {getUserInfo} from '../common/getUserInfo.js';
  * @param {string} numeroAcc - Numéro ACC
  * @param {string} startDate - Date de démarrage
  */
-export async function sendDateDemarrageNotification(operationId, numeroAcc, startDate) {
+export async function sendDateDemarrageNotification(operationId) {
   try {
-    // 1. Récupération de l'opération dans Supabase
-    const { data: operation, error: opError } = await supabase
+    // 1. Récupération des informations du producteur et des consommateurs de l'opération dans Supabase
+    const { data: operation, error} = await supabase
       .from('operations')
-      .select('id, producteur_id, consommateur_id')
+      .select(`
+        id,
+        numero_acc,
+        start_date,
+        producteurs (
+          id,
+          contact_email,
+          contact_prenom,
+          contact_nom
+        ),
+        contrats (
+          consommateurs (
+            id,
+            contact_email,
+            contact_prenom,
+            contact_nom
+          )
+        )
+      `)
       .eq('id', operationId)
       .single();
 
-    if (opError || !operation) {
-      throw new Error(`Opération introuvable : ${opError?.message}`);
+    if (error) {
+      console.error('Erreur récupération opération :', error);
+      throw new Error(`Opération introuvable : ${error.message}`);
     }
 
-    // 2. Récupération infos producteur et consommateur
-    const producteurInfo = await getUserInfo(operation.producteur_id);
-    const consommateurInfo = await getUserInfo(operation.consommateur_id);
+    // 2. Vérification des champs obligatoires
 
-    if (!producteurInfo?.email || !consommateurInfo?.email) {
-      throw new Error(`Impossible de récupérer les emails du producteur ou du consommateur`);
+    if (!operation.numero_acc || !operation.start_date) {
+      console.warn(`⚠️ Champs obligatoires numéro d'ACC (numero_acc)  et date de démarrage (start_date) manquants pour l'opération ${operationId}`);
+      return { success: false, error: `Champs obligatoires manquants pour l'opération ${operationId}` };
+    }
+    if (!operation.producteurs) {
+      console.warn(`Aucun producteur trouvé pour l'opération ${operationId}`);
+      return { success: false, error: `Aucun producteur trouvé pour l'opération ${operationId}` };
+    }
+    
+    // 3. Préparation des infos du producteur
+    const producteur = operation.producteurs;
+    const producteurEmail = producteur.contact_email;
+    const producteurPrenom = producteur.contact_prenom || '';
+
+    // 4. Préparation des infos du ou des consommateur(s)
+    const consommateurs = (operation.contrats || [])
+      .map(c => c.consommateurs)
+      .filter(Boolean);
+
+    console.log(`Producteur : ${producteurPrenom} ${producteur.contact_nom}`);
+    console.log(`🔍 ${consommateurs.length} consommateurs trouvés pour l'opération ${operationId}`);
+
+    // 5. Envoi du mail Producteur
+    console.log(`📧 Envoi notification au producteur ${producteurEmail} pour l'opération ${operationId}`);
+    if (!producteurEmail) {
+      console.warn(`⚠️ Email du producteur manquant pour l'opération ${operationId}`);
+      return { success: false, error: `Email du producteur manquant pour l'opération ${operationId}` };
+    } else {
+      await sendEmail({
+        to: 'dbourene@audencia.com', // temporairement puis remplacer par producteurInfo.email,
+        subject: `Confirmation date de mise en service - ACC ${numeroAcc}`,
+        html: `
+          <p>Bonjour ${producteurInfo?.name || ''},</p>
+          <p>La date de mise en service pour l'ACC <strong>${numeroAcc}</strong> a été confirmée.</p>
+          <p>Date de démarrage : <strong>${startDate}</strong></p>
+          <p>Cordialement,<br>L'équipe Kinjo</p>
+        `
+      });
     }
 
-    // 3. Préparation des contenus
-    const subject = `Confirmation date de mise en service - ACC ${numeroAcc}`;
-    const htmlContentProducteur = `
-      <p>Bonjour ${producteurInfo?.name || ''},</p>
-      <p>La date de mise en service pour l'ACC <strong>${numeroAcc}</strong> a été confirmée.</p>
-      <p>Date de démarrage : <strong>${startDate}</strong></p>
-      <p>Cordialement,<br>L'équipe Kinjo</p>
-    `;
-    const textContentProducteur = `
-      Bonjour ${producteurInfo?.name || ''},
+    // 6. Délai configurables avant envoi aux consommateurs pour respecter la limite d'envoi
+    const delayAfterProducer = 1000; // 1s
+    const delayBetweenConsumers = 800; // 0.8s
 
-      La date de mise en service pour l'ACC ${numeroAcc} a été confirmée.
-      Date de démarrage : ${startDate}
+    // 7. Pause avant envoi aux consommateurs
+    await new Promise(resolve => setTimeout(resolve, delayAfterProducer));
 
-      Cordialement,
-      L'équipe Kinjo
-    `;
-    const htmlContentConsommateur = `
-      <p>Bonjour ${consommateurInfo?.name || ''},</p>
-      <p>La date de mise en service pour l'ACC <strong>${numeroAcc}</strong> a été confirmée.</p>
-      <p>Date de démarrage : <strong>${startDate}</strong></p>
-      <p>Cordialement,<br>L'équipe Kinjo</p>
-    `;
-    const textContentConsommateur = `
-      Bonjour ${consommateurInfo?.name || ''},
+    // 8. Envoi des notifications aux consommateurs avec délai entre chaque envoi
+    for (const consommateur of consommateurs) {
+      console.log(`📧 Envoi notification au consommateur ${consommateur.contact_email} pour l'opération ${operationId}`);
+      if (!consommateur?.contact_email) continue;
+      await sendEmail({
+        to: 'dbourene@audencia.com', // temporairement puis remplacer par consommateur.contact_email,
+        subject: `Confirmation de date de mise en service - ACC ${numeroAcc}`,
+        html: `
+          <p>Bonjour ${consommateur.contact_prenom || ''},</p>
+          <p>La date de mise en service pour l'ACC <strong>${numeroAcc}</strong> a été confirmée.</p>
+          <p>Date de démarrage : <strong>${startDate}</strong></p>
+          <p>Cordialement,<br>L'équipe Kinjo</p>
+        `
+      });
+      await new Promise(resolve => setTimeout(resolve, delayBetweenConsumers));
+    }
 
-      La date de mise en service pour l'ACC ${numeroAcc} a été confirmée.
-      Date de démarrage : ${startDate}
+    // 9. Log de succès
+    console.log(`✅ Notifications de date de démarrage envoyées pour l'opération ${operationId}`);
 
-      Cordialement,
-      L'équipe Kinjo
-    `;
-     
-    // 4. Envoi des emails
-    await Promise.all([
-      sendEmail(producteurInfo.email, subject, textContentProducteur, htmlContentProducteur),
-      sendEmail(consommateurInfo.email, subject, textContentConsommateur, htmlContentConsommateur),
-    ]);
-
-    console.log(`Notification envoyée pour l'opération ${operationId}`);
     return { success: true };
   } catch (error) {
     console.error('Erreur envoi notification date démarrage :', error);
