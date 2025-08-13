@@ -5,16 +5,16 @@ const router = express.Router();
 
 /**
  * POST /operations/date-demarrage-notification
- * Body attendu : { operation_id, numero_acc, start_date }
+ * Body attendu : { operation_id }
  */
 router.post('/date-demarrage-notification', async (req, res) => {
-  const { operation_id, numero_acc, start_date } = req.body;
+  const { operation_id } = req.body;
 
-  if (!operation_id || !numero_acc || !start_date) {
-    return res.status(400).json({ error: 'operation_id, numero_acc et start_date sont requis' });
+  if (!operation_id) {
+    return res.status(400).json({ error: 'operation_id est requis' });
   }
 
-  const result = await sendDateDemarrageNotification(operation_id, numero_acc, start_date);
+  const result = await sendDateDemarrageNotification(operation_id);
   if (result.success) {
     res.status(200).json({ message: 'Notification envoyée avec succès' });
   } else {

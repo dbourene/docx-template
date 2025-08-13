@@ -6,8 +6,6 @@ import {sendEmail} from '../sendEmail.js';
  * Envoie une notification "Confirmation date de mise en service"
  * au producteur et au consommateur d'une opération donnée.
  * @param {string} operationId - ID de l'opération
- * @param {string} numeroAcc - Numéro ACC
- * @param {string} startDate - Date de démarrage
  */
 export async function sendDateDemarrageNotification(operationId) {
   try {
