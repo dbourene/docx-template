@@ -28,7 +28,7 @@ export const handleGenerateContrat = async (req, res) => {
     }
 
     // Étape 1 : Génération du .docx
-    await downloadTemplateLocally('CPV_template_V0_1.docx'); // Assurez-vous que le template est téléchargé
+    await downloadTemplateLocally('CPV_template_V0_2.docx'); // Assurez-vous que le template est téléchargé
     console.log('📥 Template téléchargé localement');
     
     console.log('📄 Génération du fichier .docx...');
