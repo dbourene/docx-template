@@ -70,7 +70,7 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
 
     // 5. Charger le template
     console.log('📄 Chargement du template...');
-    const templatePath = path.join(process.cwd(), 'docx-templates', 'CPV_template_V0_1.docx');  // Assurez-vous que le nom du fichier est correct
+    const templatePath = path.join(process.cwd(), 'docx-templates', 'CPV_template_V0_2.docx');  // Assurez-vous que le nom du fichier est correct
     
     try {
       await fs.access(templatePath);
