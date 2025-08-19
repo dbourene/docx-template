@@ -70,6 +70,7 @@ export async function sendDateDemarrageNotification(operationId) {
       return { success: false, error: `Email du producteur manquant pour l'opération ${operationId}` };
     } else {
       await sendEmail({
+        from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
         to: 'dbourene@audencia.com', // temporairement puis remplacer par producteurInfo.email,
         subject: `Confirmation date de mise en service - ACC ${operation.numero_acc}`,
         html: `
@@ -93,6 +94,7 @@ export async function sendDateDemarrageNotification(operationId) {
       console.log(`📧 Envoi notification au consommateur ${consommateur.contact_email} pour l'opération ${operationId}`);
       if (!consommateur?.contact_email) continue;
       await sendEmail({
+        from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
         to: 'dbourene@audencia.com', // temporairement puis remplacer par consommateur.contact_email,
         subject: `Confirmation de date de mise en service - ACC ${operation.numero_acc}`,
         html: `

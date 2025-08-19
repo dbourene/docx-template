@@ -160,6 +160,7 @@ export async function sendAnnexe21OrNotification(contratId) {
     // Envoi du mail avec la PJ
     console.log('[Annexe21] Envoi du mail à ENEDIS avec la PJ...');    
     await sendEmail({
+      from: 'Helioze <enedis@notifications.helioze.fr>', // temporairement puis remplacer par Kinjo <enedis@notifications.kinjoenergies.com>
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : enedis.mail_acc_enedis,
       subject: `Déclaration préalable d'ACC sur la commune de ${installation.commune}`,
       html: `Bonjour,<br><br>
@@ -183,6 +184,7 @@ export async function sendAnnexe21OrNotification(contratId) {
     // Attendre 1 seconde avant d'envoyer au producteur
     await delay(1000);
     await sendEmail({
+      from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : producteur.email,
       subject: 'Traitement du contrat en cours',
       html: `Bonjour ${producteur.prenom},<br><br>Nous avons le plaisir de vous informer que votre contrat est cours de traitement. 
@@ -192,6 +194,7 @@ export async function sendAnnexe21OrNotification(contratId) {
     // Attendre 1 seconde avant d'envoyer au consommateur
     await delay(1000);
     await sendEmail({
+      from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : consommateur.email,
       subject: 'Traitement du contrat en cours',
       html: `Bonjour ${consommateur.prenom},<br><br>Nous avons le plaisir de vous informer que votre contrat est cours de traitement. 
