@@ -356,7 +356,8 @@ export const handleSignatureProducteur = async (req, res) => {
     console.log('📧 Envoi de l’email de notification à', consommateurInfo.email);
 
     await sendEmail({
-      to: 'dbourene@audencia.com', // temporairement pour test à remplacer par to: consommateurInfo.email
+      from: 'Helioze <no-reply@notifications.helioze.fr>',
+      to: consommateurInfo.email,
       subject: emailSubject,
       html: emailHtml
     });

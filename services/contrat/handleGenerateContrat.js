@@ -133,7 +133,8 @@ export const handleGenerateContrat = async (req, res) => {
     console.log('📧 Envoi de l’email de notification...');
 
     await sendEmail({
-      to: 'dbourene@audencia.com', // temporairement puis remplacer par : emailProducteur,
+      from: 'Helioze <no-reply@notifications.helioze.fr>',
+      to: emailProducteur,
       subject: emailSubject,
       html: emailHtml
     });
