@@ -15,16 +15,18 @@ const router = express.Router();
  * }
  */
 router.post("/fetch", async (req, res) => {
+  console.log("🚀 ~ POST /enedis/fetch ~ req.body:", req.body);
+    
   try {
     const { operationId, start, end } = req.body;
-    console.log("🚀 ~ file: enedisFacturation.js:20 ~ router.post ~ req.body:", req.body);
-    
+    console.log(`📌 Paramètres reçus: operationId=${operationId}, start=${start}, end=${end}`);
+
     if (!operationId || !start || !end) {
       return res.status(400).json({ error: "operationId, start et end sont requis" });
     }
 
     const result = await runEnedisJob(operationId, start, end);
-
+      console.log("✅ Résultat du job ENEDIS:", result);
     if (!result.success) {
       return res.status(500).json({ error: result.error });
     }

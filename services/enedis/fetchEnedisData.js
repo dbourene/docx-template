@@ -29,9 +29,14 @@ export default async function fetchEnedisData(operationId, start, end) {
       .select('consommateur_prm, consommateur_id')
       .eq('operation_id', operationId);
 
-    if (prmError) throw prmError;
+    if (prmError) {
+      console.error("❌ Erreur lors de la récupération des PRM:", prmError);
+    } else {
+      console.log(`🔍 PRMs trouvés pour operationId=${operationId}:`, prms);
+    }
+
     if (!prms || prms.length === 0) {
-      console.log(`Aucun PRM trouvé pour l'opération ${operationId}`);
+      console.log(`⚠️ Aucun PRM trouvé pour l'opération ${operationId}`);
       return;
     }
     console.log(`PRM trouvés pour l'opération ${operationId} :`, prms);
