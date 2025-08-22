@@ -22,19 +22,23 @@ router.post("/fetch", async (req, res) => {
     console.log(`📌 Paramètres reçus: operationId=${operationId}, start=${start}, end=${end}`);
 
     if (!operationId || !start || !end) {
-      return res.status(400).json({ error: "operationId, start et end sont requis" });
+      return res.status(400).json({
+        success: false,
+        error: "operationId, start et end sont requis"
+      });
     }
 
-    const result = await runEnedisJob(operationId, start, end);
-      console.log("✅ Résultat du job ENEDIS:", result);
-    if (!result.success) {
-      return res.status(500).json({ error: result.error });
-    }
-
-    res.json({ message: "Données ENEDIS récupérées avec succès ✅" });
+    return res.json({
+      success: true,
+      message: "Données ENEDIS récupérées avec succès ✅",
+      details: result.details || null
+    });
   } catch (err) {
     console.error("❌ Erreur API /enedis/fetch :", err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      success: false,
+      error: err.message || "Erreur interne serveur"
+    });
   }
 });
 
