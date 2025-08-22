@@ -80,8 +80,8 @@ export default async function fetchEnedisData(operationId, start, end) {
       inserts.push({
         operation_id: operationId,
         prm: data.cons_id,
-        start: data.start,
-        end: data.end,
+        start_date: data.start,
+        end_date: data.end,
         unit: data.unit,
         pointe_autocons: autocons.pointe,
         HPH_autocons: autocons.HPH,
