@@ -7,18 +7,20 @@ import path from 'path';
 import supabase from '../../lib/supabaseClient.js';
 
 /**
- * Télécharge le template DOCX depuis Supabase Storage et le sauvegarde localement
+ * Télécharge le template DOCX depuis Supabase Storage (dans le répertoire "template")
+ * et le sauvegarde localement
  * @param {string} templateFileName - ex: 'CPV_template_V0_1.docx'
- * @returns {string} - Le chemin local absolu du fichier téléchargé
+ * @param {string} bucket - Nom du bucket où se trouve le répertoire "template"
+ * @returns {Promise<string>} - Le chemin local absolu du fichier téléchargé
  */
-export async function downloadTemplateLocally(templateFileName) {
+export async function downloadTemplateLocally(templateFileName, bucket) {
   const localPath = path.join(process.cwd(), 'docx-templates', templateFileName);
 
   try {
-    console.log('⬇️ Téléchargement du template depuis Supabase Storage...');
+    console.log('⬇️ Téléchargement du template depuis le bucket "', bucket, '"');
     const { data, error } = await supabase
       .storage
-      .from('contrats')
+      .from(bucket)
       .download(`template/${templateFileName}`);
 
     console.log('🧪 Résultat Supabase:', { data, error });

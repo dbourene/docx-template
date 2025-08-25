@@ -1,0 +1,78 @@
+// services/facturation/handleGenerateFacture.js
+
+import path from 'path';
+import fs from 'fs/promises';
+import { downloadTemplateLocally } from '../common/downloadTemplateLocally.js';
+import { convertDocxToPdf } from '../common/convertDocxToPdf.js';
+import { uploadToSupabase } from '../common/uploadToSupabase.js';
+import { generateFactureData } from './generateFactureData.js';
+import { generateFactureDocx } from './generateFactureDocx.js';
+import { updateFactureTable } from './updateFactureTable.js';
+import { notifyConsommateur } from './notifyConsommateur.js';
+import { generateNumeroFacture } from './generateNumeroFacture.js';
+
+/**
+ * Flux complet de génération de facture
+ * @param {string} consommateur_prm - PRM du consommateur
+ * @param {string} producteur_prm - PRM du producteur
+ * @param {string} contrat_id - UUID du contrat lié
+ */
+export async function handleGenerateFacture(consommateur_prm, producteur_prm, contrat_id) {
+  try {
+    console.log('🚀 Début génération facture pour consommateur', consommateur_prm, 'et producteur', producteur_prm);
+
+    // 1️⃣ Générer le numéro séquentiel pour ce producteur
+    const numero = await generateNumeroFacture(producteur_prm);
+    console.log(`📑 Nouveau numéro de facture généré : ${numero}`);
+
+    // 2️⃣ Générer les données de facturation
+    const { templateData, numero_acc } = await generateFactureData(consommateur_prm, producteur_prm, numero);
+
+    // 3️⃣ Télécharger le template facture depuis Supabase Storage
+    const templateFile = await downloadTemplateLocally('facture_template_V0_0.docx', 'factures');
+
+    // 4️⃣ Générer le .docx rempli avec les données
+    const outputDocx = path.join(process.cwd(), 'temp', `FA-${producteur_prm}_${numero}.docx`);
+    await generateFactureDocx(templateFile, { templateData, numero_acc }, outputDocx);
+
+    // 5️⃣ Convertir en PDF
+    const outputDir = path.join(process.cwd(), 'temp');
+    const pdfPath = await convertDocxToPdf(outputDocx, outputDir);
+
+    // 6️⃣ Uploader dans Supabase Storage
+    const now = new Date();
+    const annee = now.getFullYear();
+    const mois = String(now.getMonth() + 1).padStart(2, '0');
+    const storagePath = `factures/${numero_acc}/${mois}/FA-${producteur_prm}_${numero}.pdf`;
+
+    const { publicUrl } = await uploadToSupabase(pdfPath, storagePath, 'factures');
+
+    console.log('⬆️ Facture PDF uploadée vers Supabase Storage :', publicUrl);
+
+    // 7️⃣ Mettre à jour la table factures
+    const factureRecord = await updateFactureTable({
+      contrat_id,
+      consommateur_prm,
+      producteur_prm,
+      numero: `FAC-${producteur_prm}_${numero}`,
+      url: publicUrl,
+      type_facture: 'facture',
+    });
+
+    // 8️⃣ Notifier le consommateur par email
+    await notifyConsommateur({
+      facture_id: factureRecord.id,
+      numero: factureRecord.numero,
+      facture_url: publicUrl,
+      email_consommateur: templateData.consommateur_contact_email || templateData.consommateur_email,
+      producteur_prm,
+    });
+
+    console.log('✅ Facture générée, stockée et consommateur notifié');
+    return factureRecord;
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la génération de la facture :', error);
+    throw error;
+  }
+}
