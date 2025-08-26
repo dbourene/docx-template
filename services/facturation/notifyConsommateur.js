@@ -1,6 +1,6 @@
 // services/facturation/notifyConsommateur.js
 
-import { supabase } from '../../supabase.js';
+import supabase from '../../lib/supabaseClient.js';
 import { sendEmail } from '../sendEmail.js';
 
 /**

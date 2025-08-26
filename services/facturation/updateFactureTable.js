@@ -1,6 +1,6 @@
 // services/facturation/updateFactureTable.js
 
-import { supabase } from '../../supabase.js';
+import supabase from '../../lib/supabaseClient.js';
 
 /**
  * Insère une nouvelle facture dans la table "factures"
