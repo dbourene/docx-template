@@ -75,7 +75,7 @@ export async function generateContrat(contratId, consommateurId, producteurId, i
     try {
       await fs.access(templatePath);
     } catch {
-      throw new Error('Template CPV_template_V0_1.docx non trouvé dans le dossier docx-templates/');
+      throw new Error('Template CPV_template_V0_2.docx non trouvé dans le dossier docx-templates/');
     }
 
     const template = await fs.readFile(templatePath);

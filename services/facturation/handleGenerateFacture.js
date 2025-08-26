@@ -16,6 +16,7 @@ import { generateNumeroFacture } from './generateNumeroFacture.js';
  * @param {string} consommateur_prm - PRM du consommateur
  * @param {string} producteur_prm - PRM du producteur
  * @param {string} contrat_id - UUID du contrat lié
+ * @returns {Promise<string>} - Résultat de l'opération avec succès ou erreur
  */
 export async function handleGenerateFacture(consommateur_prm, producteur_prm, contrat_id) {
   try {
@@ -69,10 +70,22 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
     });
 
     console.log('✅ Facture générée, stockée et consommateur notifié');
-    return factureRecord;
+    return {
+      success: true,
+      details: {
+        facture_id: factureRecord.id,
+        numero: factureRecord.numero,
+        url: factureRecord.url,
+        consommateur_prm,
+        producteur_prm,
+      }
+    };
 
   } catch (error) {
     console.error('❌ Erreur lors de la génération de la facture :', error);
-    throw error;
+    return {
+      success: false,
+      error: error.message || 'Erreur inconnue lors de la génération de la facture',
+    };
   }
 }

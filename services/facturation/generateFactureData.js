@@ -106,22 +106,26 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
   // -------------------------------
   // 7️⃣ Calculs intermédiaires
   // -------------------------------
-  const arr2 = (v) => (v ? Number(v).toFixed(2) : '0.00');
-
-  const base_total_ht = arr2(definitive.base_autocons * (contrat.tarif_base || 0));
-  const pointe_total_ht = arr2(definitive.pointe_autocons * (contrat.tarif_pointe || 0));
-  const hph_total_ht = arr2(definitive.HPH_autocons * (contrat.tarif_HPH || 0));
-  const hch_total_ht = arr2(definitive.HCH_autocons * (contrat.tarif_HCH || 0));
-  const hpb_total_ht = arr2(definitive.HPB_autocons * (contrat.tarif_HPB || 0));
-  const hcb_total_ht = arr2(definitive.HCB_autocons * (contrat.tarif_HCB || 0));
-
-  const autocons_total =
-    (definitive.base_autocons || 0) +
+  
+  // 💡 Volumes (base_autocons absent en BDD -> on le calcule)
+  const base_autocons =
     (definitive.pointe_autocons || 0) +
     (definitive.HPH_autocons || 0) +
     (definitive.HCH_autocons || 0) +
     (definitive.HPB_autocons || 0) +
     (definitive.HCB_autocons || 0);
+
+  // ✅ Total d'autoconsommation (sans double compte)
+  const autocons_total = base_autocons;
+
+  const arr2 = (v) => (v ? Number(v).toFixed(2) : '0.00');
+
+  const base_total_ht = arr2(base_autocons * (contrat.tarif_base || 0));
+  const pointe_total_ht = arr2(definitive.pointe_autocons * (contrat.tarif_pointe || 0));
+  const hph_total_ht = arr2(definitive.HPH_autocons * (contrat.tarif_HPH || 0));
+  const hch_total_ht = arr2(definitive.HCH_autocons * (contrat.tarif_HCH || 0));
+  const hpb_total_ht = arr2(definitive.HPB_autocons * (contrat.tarif_HPB || 0));
+  const hcb_total_ht = arr2(definitive.HCB_autocons * (contrat.tarif_HCB || 0));
 
   const accise_totale_taux_inf_36kVA = arr2(autocons_total * (accise.taux_inf_36kVA || 0));
   const accise_totale_taux_36kVA_250kVA = arr2(autocons_total * (accise.taux_36kVA_250kVA || 0));
@@ -200,7 +204,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     // Données consommation
     start_date,
     end_date,
-    base_autocons: definitive.base_autocons,
+    base_autocons,
     pointe_autocons: definitive.pointe_autocons,
     HPH_autocons: definitive.HPH_autocons,
     HCH_autocons: definitive.HCH_autocons,

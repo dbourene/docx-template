@@ -18,16 +18,15 @@ export async function generateNumeroFacture(producteur_prm) {
       .eq('producteur_prm', producteur_prm)
       .eq('type_facture', 'facture') // uniquement les factures, pas les avoirs
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
 
     if (error) {
       throw new Error(`Erreur lors de la récupération du dernier numéro de facture: ${error.message}`);
     }
 
     let nextNumero = 1;
-    if (data && data.numero) {
-      nextNumero = parseInt(data.numero, 10) + 1;
+    if (data && data.length > 0 && data[0].numero) {
+      nextNumero = parseInt(data[0].numero, 10) + 1;
     }
 
     // Format sur 6 chiffres avec padding (ex: "000123")
