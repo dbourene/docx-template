@@ -36,7 +36,7 @@ export async function notifyConsommateur({
     `;
 
     await sendEmail({
-      from: 'facturation@helioze.fr',
+      from: 'Helioze <facturation@notification.helioze.fr>',
       to: email_consommateur,
       subject,
       html,
