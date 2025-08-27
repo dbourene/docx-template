@@ -20,7 +20,7 @@ export async function notifyConsommateur({
   numero,
   facture_url,
   email_consommateur,
-  producteur_prm,
+  prm_nom,
 }) {
   try {
     console.log(`📧 Notification du consommateur pour la facture ${numero}...`);
@@ -29,7 +29,7 @@ export async function notifyConsommateur({
     const subject = `Votre facture ${numero} est disponible`;
     const html = `
       <p>Bonjour,</p>
-      <p>Votre facture <strong>${numero}</strong> liée au producteur PRM <strong>${producteur_prm}</strong> est disponible.</p>
+      <p>Votre facture <strong>${numero} de</strong> ${prm_nom} <strong>est disponible.</p>
       <p>Vous pouvez la télécharger via le lien suivant :</p>
       <p><a href="${facture_url}">📄 Télécharger ma facture</a></p>
       <p>Cordialement,<br>L'équipe Helioze</p>

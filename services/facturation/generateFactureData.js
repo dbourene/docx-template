@@ -176,6 +176,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     consommateur_prm,
     consommateur_siret: consommateur.siret || '[SIRET_ABSENT]',
     consommateur_denominationUniteLegale: consommateur.denominationUniteLegale || '[DENOMINATION_ABSENTE]',
+    consommateur_contact_email: consommateur.contact_email || '[EMAIL_ABSENTE]',
 
     // Données producteur
     producteur_contact_prenom: producteur.contact_prenom || '[PRENOM_ABSENT]',

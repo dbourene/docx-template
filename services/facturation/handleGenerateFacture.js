@@ -61,12 +61,26 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
     });
 
     // 8️⃣ Notifier le consommateur par email
+    let prm_nom;
+
+    if (templateData.producteur_particulier) {
+      // Si producteur particulier → prénom
+      prm_nom = templateData.producteur_contact_prenom;
+    } else if (templateData.producteur_entreprise) {
+      // Si producteur entreprise → dénomination légale (ou sigle si dispo)
+      prm_nom = templateData.producteur_denominationUniteLegale !== '[DENOMINATION_ABSENTE]'
+        ? templateData.producteur_denominationUniteLegale
+        : templateData.producteur_sigleUniteLegale;
+    } else {
+      prm_nom = '[NOM_PRODUCTEUR_ABSENT]';
+    }
+    
     await notifyConsommateur({
       facture_id: factureRecord.id,
       numero: factureRecord.numero,
       facture_url: publicUrl,
-      email_consommateur: templateData.consommateur_contact_email || templateData.consommateur_email,
-      producteur_prm,
+      email_consommateur: templateData.consommateur_contact_email,
+      prm_nom,
     });
 
     console.log('✅ Facture générée, stockée et consommateur notifié');
