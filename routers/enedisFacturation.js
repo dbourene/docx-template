@@ -33,7 +33,7 @@ router.post("/fetch", async (req, res) => {
     // 👉 Étape 2 : Génération des factures après insertion des données
     let factureResult;
     try {
-      factureResult = await handleGenerateFacture(operationId, start, end);
+      factureResult = await handleGenerateFactureOperation(operationId, start, end);
       console.log("✅ Résultat facturation:", factureResult);
     } catch (factureError) {
       console.error("❌ Erreur génération factures:", factureError);
