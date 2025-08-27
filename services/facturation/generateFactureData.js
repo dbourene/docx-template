@@ -74,8 +74,13 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
   const { data: definitive, error: defError } = await supabase
     .from('definitive_active_energy_cons')
     .select('*')
-    .eq('contrat_id', contrat.id)
-    .single();
+    .eq('operation_id', operationId)
+    .eq('prm', consommateur_prm)
+    .gte('start_date', startDate)
+    .lte('end_date', endDate)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (defError || !definitive) {
     throw new Error(`Erreur récupération consommation: ${defError?.message}`);
