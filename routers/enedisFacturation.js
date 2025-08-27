@@ -1,7 +1,7 @@
 // routers/enedisFacturation.js
 import express from "express";
 import { runEnedisJob } from "../services/enedis/index.js";
-import { handleGenerateFacture } from "../services/facturation/handleGenerateFacture.js";
+import { generateFacturesForOperation } from "../services/facturation/generateFacturesForOperation.js";
 
 const router = express.Router();
 
