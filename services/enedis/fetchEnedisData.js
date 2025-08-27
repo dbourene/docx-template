@@ -29,15 +29,11 @@ export default async function fetchEnedisData(operationId, start, end) {
       .select('consommateur_prm, consommateur_id')
       .eq('operation_id', operationId);
 
-    if (prmError) {
-      console.error("❌ Erreur lors de la récupération des PRM:", prmError);
-    } else {
-      console.log(`🔍 PRMs trouvés pour operationId=${operationId}:`, prms);
-    }
+    if (prmError) throw prmError;
 
     if (!prms || prms.length === 0) {
       console.log(`⚠️ Aucun PRM trouvé pour l'opération ${operationId}`);
-      return;
+      return { success: false, message: `Aucun PRM trouvé pour l'opération ${operationId}` };
     }
     console.log(`PRM trouvés pour l'opération ${operationId} :`, prms);
 
@@ -111,8 +107,11 @@ export default async function fetchEnedisData(operationId, start, end) {
       console.log(`✅ ${inserts.length} PRM insérés avec succès pour l'opération ${operationId}`);
     }
 
+    // 6️⃣ Retourner le résultat final
+    return { success: true, inserted: inserts };
+
   } catch (err) {
-    console.error('Erreur fetchEnedisData:', err.message);
-    throw err;
+    console.error('❌ Erreur fetchEnedisData:', err.message);
+    return { success: false, message: err.message };
   }
 }
