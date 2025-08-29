@@ -5,10 +5,10 @@ import { handleGenerateFacture } from "./handleGenerateFacture.js";
 /**
  * Génère les factures pour tous les PRM liés à une opération
  * @param {string} operationId - UUID de l'opération
- * @param {string} start - date de début
- * @param {string} end - date de fin
+ * @param {string} startDate - date de début
+ * @param {string} endDate - date de fin
  */
-export async function generateFacturesForOperation(operationId, start, end) {
+export async function generateFacturesForOperation(operationId, startDate, endDate) {
   try {
     console.log(`🧾 Début génération des factures pour opération ${operationId}`);
 
@@ -17,8 +17,8 @@ export async function generateFacturesForOperation(operationId, start, end) {
       .from("definitive_active_energy_cons")
       .select("prm, start_date, end_date")
       .eq("operation_id", operationId)
-      .eq("start_date", start)
-      .eq("end_date", end)
+      .eq("start_date", startDate)
+      .eq("end_date", endDate)
       .order("created_at", { ascending: false })
       .limit(1);
     console.log("🔍 Données de Consommation récupérées dans definitive_active_energy_cons:", consData);
@@ -57,7 +57,10 @@ export async function generateFacturesForOperation(operationId, start, end) {
       const facture = await handleGenerateFacture(
         contrat.consommateur_prm,
         producteur_prm,
-        contrat.id
+        contrat.id,
+        operationId,
+        startDate,
+        endDate
       );
 
       factures.push(facture);

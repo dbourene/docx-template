@@ -5,10 +5,10 @@ import { fetchToken } from './fetchToken.js';
 /**
  * Récupère les données définitives d'énergie pour une opération donnée
  * @param {string} operationId - UUID de l'opération dans Supabase
- * @param {string} start - date de début au format "YYYYMMDDTHHMMSSZ"
- * @param {string} end - date de fin au format "YYYYMMDDTHHMMSSZ"
+ * @param {string} startDate - date de début au format "YYYYMMDDTHHMMSSZ"
+ * @param {string} endDate - date de fin au format "YYYYMMDDTHHMMSSZ"
  */
-export default async function fetchEnedisData(operationId, start, end) {
+export default async function fetchEnedisData(operationId, startDate, endDate) {
   try {
     // 1️⃣ Récupérer uniquement l’opération (numero_acc)
     const { data: operations, error: opError } = await supabase
@@ -76,8 +76,8 @@ export default async function fetchEnedisData(operationId, start, end) {
       inserts.push({
         operation_id: operationId,
         prm: data.cons_id,
-        start_date: data.start,
-        end_date: data.end,
+        start_date: data.startDate,
+        end_date: data.endDate,
         unit: data.unit,
         pointe_autocons: autocons.pointe,
         HPH_autocons: autocons.HPH,

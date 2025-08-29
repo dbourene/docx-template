@@ -16,9 +16,12 @@ import { generateNumeroFacture } from './generateNumeroFacture.js';
  * @param {string} consommateur_prm - PRM du consommateur
  * @param {string} producteur_prm - PRM du producteur
  * @param {string} contrat_id - UUID du contrat lié
+ * @param {string} operationId - UUID de l'opération
+ * @param {string} startDate - date de début au format YYYYMMDDTHHMMSSZ
+ * @param {string} endDate - date de fin au format YYYYMMDDTHHMMSSZ
  * @returns {Promise<string>} - Résultat de l'opération avec succès ou erreur
  */
-export async function handleGenerateFacture(consommateur_prm, producteur_prm, contrat_id) {
+export async function handleGenerateFacture(consommateur_prm, producteur_prm, contrat_id, operationId, startDate, endDate) {
   try {
     console.log('🚀 Début génération facture pour consommateur', consommateur_prm, 'et producteur', producteur_prm);
 
@@ -27,7 +30,7 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
     console.log(`📑 Nouveau numéro de facture généré : ${numero}`);
 
     // 2️⃣ Générer les données de facturation
-    const { templateData, numero_acc } = await generateFactureData(consommateur_prm, producteur_prm, numero);
+    const { templateData, numero_acc } = await generateFactureData(consommateur_prm, producteur_prm, numero, operationId, startDate, endDate);
 
     // 3️⃣ Télécharger le template facture depuis Supabase Storage
     const templateFile = await downloadTemplateLocally('facture_template_V0_1.docx', 'factures');

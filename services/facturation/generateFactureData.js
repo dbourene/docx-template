@@ -7,8 +7,11 @@ import supabase from '../../lib/supabaseClient.js';
  * @param {string} consommateur_prm - PRM du consommateur
  * @param {string} producteur_prm - PRM du producteur
  * @param {string} numeroFacture - numéro séquentiel de la facture
+ * @param {string} operationId - UUID de l'opération
+ * @param {string} startDate - date de début au format YYYYMMDDTHHMMSSZ
+ * @param {string} endDate - date de fin au format YYYYMMDDTHHMMSSZ
  */
-export async function generateFactureData(consommateur_prm, producteur_prm, numeroFacture) {
+export async function generateFactureData(consommateur_prm, producteur_prm, numeroFacture, operationId, startDate, endDate) {
   console.log('📑 Génération des données de facture...');
 
   // -------------------------------
@@ -51,7 +54,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     throw new Error(`Erreur récupération producteur: ${producteurError?.message}`);
   }
   console.log('Producteur trouvé:', producteur);
-  
+
   // -------------------------------
   // 3️⃣ Récupérer le contrat associé
   // -------------------------------

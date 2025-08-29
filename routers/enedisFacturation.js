@@ -9,18 +9,18 @@ router.post("/fetch", async (req, res) => {
   console.log("🚀 ~ POST /enedis/fetch ~ req.body:", req.body);
 
   try {
-    const { operationId, start, end } = req.body;
-    console.log(`📌 Paramètres reçus: operationId=${operationId}, start=${start}, end=${end}`);
+    const { operationId, startDate, endDate } = req.body;
+    console.log(`📌 Paramètres reçus: operationId=${operationId}, startDate=${startDate}, endDate=${endDate}`);
 
-    if (!operationId || !start || !end) {
+    if (!operationId || !startDate || !endDate) {
       return res.status(400).json({
         success: false,
-        error: "operationId, start et end sont requis"
+        error: "operationId, startDate et endDate sont requis"
       });
     }
 
     // 👉 Étape 1 : Récupération des données ENEDIS
-    const enedisResult = await runEnedisJob(operationId, start, end);
+    const enedisResult = await runEnedisJob(operationId, startDate, endDate);
     console.log("✅ Résultat du job ENEDIS:", enedisResult);
 
     if (!enedisResult || !enedisResult.success) {
@@ -33,7 +33,7 @@ router.post("/fetch", async (req, res) => {
     // 👉 Étape 2 : Génération des factures après insertion des données
     let factureResult;
     try {
-      factureResult = await generateFacturesForOperation(operationId, start, end);
+      factureResult = await generateFacturesForOperation(operationId, startDate, endDate);
       console.log("✅ Résultat facturation:", factureResult);
     } catch (factureError) {
       console.error("❌ Erreur génération factures:", factureError);
