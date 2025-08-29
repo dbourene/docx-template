@@ -23,20 +23,35 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
   if (consommateurError || !consommateur) {
     throw new Error(`Erreur récupération consommateur: ${consommateurError?.message}`);
   }
+  console.log('Consommateur trouvé:', consommateur);
 
   // -------------------------------
   // 2️⃣ Récupérer les données liées au producteur
   // -------------------------------
+  // 🔍 Récupération de l’installation à partir du prm producteur
+  const { data: installationData, error: installationDataError } = await supabase
+    .from('installations')
+    .select('id, producteur_id')
+    .eq('prm', producteur_prm)
+    .single();
+
+  if (installationDataError || !installationData) {
+    throw new Error(`Erreur récupération installation: ${installationDataError?.message}`);
+  }
+  console.log('Installation trouvée:', installationData);
+
+  // 🔍 Récupération du producteur lié à l’installation
   const { data: producteur, error: producteurError } = await supabase
     .from('producteurs')
     .select('*')
-    .eq('prm', producteur_prm)
+    .eq('id', installationData.producteur_id)
     .single();
 
   if (producteurError || !producteur) {
     throw new Error(`Erreur récupération producteur: ${producteurError?.message}`);
   }
-
+  console.log('Producteur trouvé:', producteur);
+  
   // -------------------------------
   // 3️⃣ Récupérer le contrat associé
   // -------------------------------
