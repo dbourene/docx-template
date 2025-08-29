@@ -1,4 +1,4 @@
-// services/enedis/index.js
+// services/enedis/runEnedisJob.js
 import fetchEnedisData from "./fetchEnedisData.js";
 import { handleGenerateFacture } from "../facturation/handleGenerateFacture.js";
 
@@ -21,6 +21,11 @@ export async function runEnedisJob(operationId, start, end) {
     }
   
     console.log("✅ Données ENEDIS récupérées:", fetchResult);
+
+    return {
+      success: true,
+      details: fetchResult
+    };  
   } catch (err) {
     console.error("❌ Erreur récupération ENEDIS:", err);
     return {
