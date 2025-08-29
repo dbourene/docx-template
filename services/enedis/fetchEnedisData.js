@@ -47,7 +47,7 @@ export default async function fetchEnedisData(operationId, startDate, endDate) {
     for (const prmEntry of prms) {
       const { consommateur_prm } = prmEntry;
 
-      const url = `https://gw.ext.prod.api.enedis.fr/collective_self_consumption/v4/agreements/${numero_acc}/definitive_active_energy/cons/${consommateur_prm}?start=${start}&end=${end}&type=cons,autocons,complement`;
+      const url = `https://gw.ext.prod.api.enedis.fr/collective_self_consumption/v4/agreements/${numero_acc}/definitive_active_energy/cons/${consommateur_prm}?start=${startDate}&end=${endDate}&type=cons,autocons,complement`;
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
