@@ -13,7 +13,7 @@ export async function runEnedisJob(operationId, start, end) {
   
   let fetchResult;
   try {
-    // 1️⃣ Récupération des données ENEDIS
+    // Récupération des données ENEDIS
     fetchResult = await fetchEnedisData(operationId, start, end);
 
     if (!fetchResult.success) {
@@ -26,24 +26,6 @@ export async function runEnedisJob(operationId, start, end) {
     return {
       success: false,
       error: "Récupération ENEDIS échouée: " + err.message
-    };
-  }
-
-  // 2️⃣ Déclenchement de la facturation
-  try {
-    const factureResult = await handleGenerateFacture(operationId);
-    console.log("🧾 Facturation générée avec succès:", factureResult);
-
-    return {
-      success: true,
-      enedis: fetchResult,
-      facturation: factureResult
-    };
-  } catch (err) {
-    console.error("❌ Erreur facturation:", err);
-    return {
-      success: false,
-      error: "Facturation échouée: " + err.message
     };
   }
 }

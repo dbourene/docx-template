@@ -19,6 +19,7 @@ export async function generateFacturesForOperation(operationId, start, end) {
       .eq("operation_id", operationId)
       .eq("start_date", start)
       .eq("end_date", end);
+    console.log("🔍 Données de Consommation récupérées dans definitive_active_energy_cons:", consData);
 
     if (consError) throw consError;
     if (!consData || consData.length === 0) {
