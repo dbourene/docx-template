@@ -139,7 +139,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     (definitive.HCB_autocons || 0);
 
   // ✅ Total d'autoconsommation (sans double compte)
-  const autocons_total = base_autocons;
+  const autocons_totale = base_autocons;
 
   const arr2 = (v) => (v ? Number(v).toFixed(2) : '0.00');
 
@@ -150,10 +150,10 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
   const hpb_total_ht = arr2(definitive.HPB_autocons * (contrat.tarif_HPB || 0));
   const hcb_total_ht = arr2(definitive.HCB_autocons * (contrat.tarif_HCB || 0));
 
-  const accise_totale_taux_inf_36kVA = arr2(autocons_total * (accise.taux_inf_36kVA || 0));
-  const accise_totale_taux_36kVA_250kVA = arr2(autocons_total * (accise.taux_36kVA_250kVA || 0));
-  const accise_totale_taux_sup_250kVA = arr2(autocons_total * (accise.taux_sup_250kVA || 0));
-  const accise_totale_taux_reduit = arr2(autocons_total * (accise.taux_reduit || 0));
+  const accise_totale_taux_inf_36kVA = arr2(autocons_totale * (accise.taux_inf_36kVA || 0));
+  const accise_totale_taux_36kVA_250kVA = arr2(autocons_totale * (accise.taux_36kVA_250kVA || 0));
+  const accise_totale_taux_sup_250kVA = arr2(autocons_totale * (accise.taux_sup_250kVA || 0));
+  const accise_totale_taux_reduit = arr2(autocons_totale * (accise.taux_reduit || 0));
 
   const total_ht =
     parseFloat(base_total_ht) +
@@ -242,7 +242,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     hch_total_ht,
     hpb_total_ht,
     hcb_total_ht,
-    autocons_total,
+    autocons_totale,
 
     // Accises
     taux_inf_36kVA: accise.taux_inf_36kVA,
