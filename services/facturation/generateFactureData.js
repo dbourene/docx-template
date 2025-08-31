@@ -191,6 +191,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     categorie_puissance_branchement_1: consommateur.categorie_puissance_branchement === 1,
     categorie_puissance_branchement_2: consommateur.categorie_puissance_branchement === 2,
     categorie_puissance_branchement_3: consommateur.categorie_puissance_branchement === 3,
+    categorie_puissance_branchement_4: consommateur.categorie_puissance_branchement === 4,
 
     // Données consommateur
     consommateur_contact_prenom: consommateur.contact_prenom || '[PRENOM_ABSENT]',
