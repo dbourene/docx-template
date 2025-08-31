@@ -54,7 +54,8 @@ export default async function fetchEnedisData(operationId, startDate, endDate) {
       });
 
       const data = response.data;
-
+      console.log(`Données récupérées pour le PRM ${consommateur_prm} :`, data);
+      
       const extractQuantities = (type) => {
         const distrib = data.quantities.find(
           (q) => q.type === type && q.calendar_type === 'DISTRIB'
