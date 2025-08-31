@@ -34,7 +34,8 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
 
     // 3️⃣ Télécharger le template facture depuis Supabase Storage
     const templateFile = await downloadTemplateLocally('facture_template_V0_1.docx', 'factures');
-
+    console.log('📄 Template de facture téléchargé localement :', templateFile);
+    
     // 4️⃣ Générer le .docx rempli avec les données
     const outputDocx = path.join(process.cwd(), 'temp', `FA-${producteur_prm}_${numero}.docx`);
     await generateFactureDocx(templateFile, { templateData, numero_acc }, outputDocx);

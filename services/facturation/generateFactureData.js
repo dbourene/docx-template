@@ -218,6 +218,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     date_reglement_du: new Date().toLocaleDateString('fr-FR'),
 
     // Données contrat
+    contrat_numero: contrat.numero || '[NUMERO_CONTRAT_ABSENT]',
     tarif_base: contrat.tarif_base,
     tarif_pointe: contrat.tarif_pointe,
     tarif_HPH: contrat.tarif_HPH,
