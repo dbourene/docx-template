@@ -182,7 +182,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     consommateur_entreprise: consommateurType === 'entreprise',
     producteur_particulier: producteurType === 'particulier',
     producteur_entreprise: producteurType === 'entreprise',
-    contrats_base: contrat.tarif_base != null,
+    contrat_base: contrat.tarif_base != null,
     contrat_pointe: contrat.tarif_pointe != null,
     contrat_HPH: contrat.tarif_HPH != null,
     contrat_HCH: contrat.tarif_HCH != null,
