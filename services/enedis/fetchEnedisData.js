@@ -55,7 +55,7 @@ export default async function fetchEnedisData(operationId, startDate, endDate) {
 
       const data = response.data;
       console.log(`Données récupérées pour le PRM ${consommateur_prm} :`, data);
-      
+
       const extractQuantities = (type) => {
         const distrib = data.quantities.find(
           (q) => q.type === type && q.calendar_type === 'DISTRIB'
@@ -77,8 +77,8 @@ export default async function fetchEnedisData(operationId, startDate, endDate) {
       inserts.push({
         operation_id: operationId,
         prm: data.cons_id,
-        start_date: data.startDate,
-        end_date: data.endDate,
+        start_date: data.start,
+        end_date: data.end,
         unit: data.unit,
         pointe_autocons: autocons.pointe,
         HPH_autocons: autocons.HPH,
