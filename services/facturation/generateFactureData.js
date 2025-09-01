@@ -151,10 +151,10 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
   const hpb_total_ht = arr4(definitive.HPB_autocons * (contrat.tarif_HPB || 0)/100);
   const hcb_total_ht = arr4(definitive.HCB_autocons * (contrat.tarif_HCB || 0)/100);
 
-  const accise_totale_taux_inf_36kVA = arr4(autocons_totale * (accise.taux_inf_36kVA || 0)/100);
-  const accise_totale_taux_36kVA_250kVA = arr4(autocons_totale * (accise.taux_36kVA_250kVA || 0)/100);
-  const accise_totale_taux_sup_250kVA = arr4(autocons_totale * (accise.taux_sup_250kVA || 0)/100);
-  const accise_totale_taux_reduit = arr4(autocons_totale * (accise.taux_reduit || 0)/100);
+  const accise_totale_taux_inf_36kVA = arr2(autocons_totale * (accise.taux_inf_36kVA || 0)/100);
+  const accise_totale_taux_36kVA_250kVA = arr2(autocons_totale * (accise.taux_36kVA_250kVA || 0)/100);
+  const accise_totale_taux_sup_250kVA = arr2(autocons_totale * (accise.taux_sup_250kVA || 0)/100);
+  const accise_totale_taux_reduit = arr2(autocons_totale * (accise.taux_reduit || 0)/100);
 
   const total_ht =
     parseFloat(base_total_ht) +
@@ -193,7 +193,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     categorie_puissance_branchement_2: consommateur.categorie_puissance_branchement === 2,
     categorie_puissance_branchement_3: consommateur.categorie_puissance_branchement === 3,
     categorie_puissance_branchement_4: consommateur.categorie_puissance_branchement === 4,
-
+    
     // Données consommateur
     consommateur_contact_prenom: consommateur.contact_prenom || '[PRENOM_ABSENT]',
     consommateur_contact_nom: consommateur.contact_nom || '[NOM_ABSENT]',
@@ -217,7 +217,11 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     // Données facture
     facture_numero: numeroFacture,
     date_facture: new Date().toLocaleDateString('fr-FR'),
-    date_reglement_du: new Date().toLocaleDateString('fr-FR'),
+    date_reglement_du: (() => {
+      const date = new Date();
+      date.setDate(date.getDate() + 15);
+      return date.toLocaleDateString('fr-FR');
+    })(),
 
     // Données contrat
     contrat_numero: contrat.numero || '[NUMERO_CONTRAT_ABSENT]',
@@ -261,7 +265,7 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     total_tva,
     total_ttc,
   };
-
+  console.log('✅ Les Flags conditionnels sont :', templateData);
   console.log('✅ Données facture générées avec succès');
   return { templateData, numero_acc };
 }
