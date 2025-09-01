@@ -23,7 +23,7 @@ export async function notifyConsommateur({
   prm_nom,
 }) {
   try {
-    console.log(`📧 Notification du consommateur pour la facture ${numero}...`);
+    console.log(`📧 Notification du consommateur à l'adresse ${email_consommateur} pour mise à disposition de la facture ${numero} du producteur ${prm_nom}.`);
 
     // 1️⃣ Construire l'email
     const subject = `Votre facture ${numero} est disponible`;

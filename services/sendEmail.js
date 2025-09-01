@@ -26,17 +26,19 @@ export async function sendEmail({ from, to, subject, html, attachments }) {
           { selector: 'a', options: { hideLinkHrefIfSameAsText: true } }
         ]
       })
-    : undefined; 
-    
+    : undefined;
+
+    console.log(`📧 Envoi de l'email à ${to} de la part de ${from} et de sujet ${subject}.`);
     const { data, error } = await resend.emails.send({
       from,
       to,
-      replyTo: 'denis.bourene@helioze.fr',
+      // replyTo: 'denis.bourene@helioze.fr', 
       subject,
       html,
       text,
       attachments,
     });
+    console.log('📨 Email envoyé via Resend:', data);
 
     if (error) {
       console.error('Erreur envoi email:', error);
