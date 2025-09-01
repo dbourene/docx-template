@@ -46,9 +46,12 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
 
     // 6️⃣ Uploader dans Supabase Storage
     const now = new Date();
-    const annee = now.getFullYear();
-    const mois = String(now.getMonth() + 1).padStart(2, '0');
-    const storagePath = `factures/${numero_acc}/${mois}/FA-${producteur_prm}_${numero}.pdf`;
+    const prevMonth = new Date(now);
+    prevMonth.setMonth(now.getMonth() - 1);
+
+    const annee = prevMonth.getFullYear();
+    const mois = String(prevMonth.getMonth() + 1).padStart(2, '0');
+    const storagePath = `factures/${numero_acc}/${annee}/${mois}/FA-${producteur_prm}_${numero}.pdf`;
 
     const { publicUrl } = await uploadToSupabase(pdfPath, storagePath, 'factures');
 
@@ -59,11 +62,12 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
       contrat_id,
       consommateur_prm,
       producteur_prm,
-      numero: `FAC-${producteur_prm}_${numero}`,
+      numero: numero,
       url: publicUrl,
       type_facture: 'facture',
     });
-
+    console.log('🗃️ Table factures mise à jour avec la nouvelle facture, ID:', factureRecord.id);
+    
     // 8️⃣ Notifier le consommateur par email
     let prm_nom;
 

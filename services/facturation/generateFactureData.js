@@ -142,18 +142,19 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
   const autocons_totale = base_autocons;
 
   const arr2 = (v) => (v ? Number(v).toFixed(2) : '0.00');
+  const arr4 = (v) => (v ? Number(v).toFixed(4) : '0.0000');
 
-  const base_total_ht = arr2(base_autocons * (contrat.tarif_base || 0));
-  const pointe_total_ht = arr2(definitive.pointe_autocons * (contrat.tarif_pointe || 0));
-  const hph_total_ht = arr2(definitive.HPH_autocons * (contrat.tarif_HPH || 0));
-  const hch_total_ht = arr2(definitive.HCH_autocons * (contrat.tarif_HCH || 0));
-  const hpb_total_ht = arr2(definitive.HPB_autocons * (contrat.tarif_HPB || 0));
-  const hcb_total_ht = arr2(definitive.HCB_autocons * (contrat.tarif_HCB || 0));
+  const base_total_ht = arr4(base_autocons * (contrat.tarif_base || 0)/100);
+  const pointe_total_ht = arr4(definitive.pointe_autocons * (contrat.tarif_pointe || 0)/100);
+  const hph_total_ht = arr4(definitive.HPH_autocons * (contrat.tarif_HPH || 0)/100);
+  const hch_total_ht = arr4(definitive.HCH_autocons * (contrat.tarif_HCH || 0)/100);
+  const hpb_total_ht = arr4(definitive.HPB_autocons * (contrat.tarif_HPB || 0)/100);
+  const hcb_total_ht = arr4(definitive.HCB_autocons * (contrat.tarif_HCB || 0)/100);
 
-  const accise_totale_taux_inf_36kVA = arr2(autocons_totale * (accise.taux_inf_36kVA || 0));
-  const accise_totale_taux_36kVA_250kVA = arr2(autocons_totale * (accise.taux_36kVA_250kVA || 0));
-  const accise_totale_taux_sup_250kVA = arr2(autocons_totale * (accise.taux_sup_250kVA || 0));
-  const accise_totale_taux_reduit = arr2(autocons_totale * (accise.taux_reduit || 0));
+  const accise_totale_taux_inf_36kVA = arr4(autocons_totale * (accise.taux_inf_36kVA || 0)/100);
+  const accise_totale_taux_36kVA_250kVA = arr4(autocons_totale * (accise.taux_36kVA_250kVA || 0)/100);
+  const accise_totale_taux_sup_250kVA = arr4(autocons_totale * (accise.taux_sup_250kVA || 0)/100);
+  const accise_totale_taux_reduit = arr4(autocons_totale * (accise.taux_reduit || 0)/100);
 
   const total_ht =
     parseFloat(base_total_ht) +
