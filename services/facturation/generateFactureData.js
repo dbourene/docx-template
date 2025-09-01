@@ -251,10 +251,10 @@ export async function generateFactureData(consommateur_prm, producteur_prm, nume
     autocons_totale,
 
     // Accises
-    taux_inf_36kVA: accise.taux_inf_36kVA,
-    taux_36kVA_250kVA: accise.taux_36kVA_250kVA,
-    taux_sup_250kVA: accise.taux_sup_250kVA,
-    taux_reduit: accise.taux_reduit,
+    taux_inf_36kVA: arr4((accise.taux_inf_36kVA || 0)/100),
+    taux_36kVA_250kVA: arr4((accise.taux_36kVA_250kVA || 0)/100),
+    taux_sup_250kVA: arr4((accise.taux_sup_250kVA || 0)/100),
+    taux_reduit: arr4((accise.taux_reduit || 0)/100),
     accise_totale_taux_inf_36kVA,
     accise_totale_taux_36kVA_250kVA,
     accise_totale_taux_sup_250kVA,

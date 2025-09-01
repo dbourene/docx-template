@@ -67,7 +67,7 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
       type_facture: 'facture',
     });
     console.log('🗃️ Table factures mise à jour avec la nouvelle facture, ID:', factureRecord.id);
-    
+
     // 8️⃣ Notifier le consommateur par email
     let prm_nom;
 
@@ -82,7 +82,7 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
     } else {
       prm_nom = '[NOM_PRODUCTEUR_ABSENT]';
     }
-    
+    console.log(`🏷️ Nom du producteur pour l'email : ${prm_nom}`);
     await notifyConsommateur({
       facture_id: factureRecord.id,
       numero: factureRecord.numero,
