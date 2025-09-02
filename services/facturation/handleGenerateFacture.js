@@ -63,7 +63,8 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
       consommateur_prm,
       producteur_prm,
       numero: numero,
-      url: publicUrl,
+      url: publicUrl, // stockage de l'url publique
+      storage_path: storagePath, // stockage du chemin interne
       type_facture: 'facture',
     });
     console.log('🗃️ Table factures mise à jour avec la nouvelle facture, ID:', factureRecord.id);
@@ -86,7 +87,6 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
     await notifyConsommateur({
       facture_id: factureRecord.id,
       numero: factureRecord.numero,
-      facture_url: publicUrl,
       email_consommateur: templateData.consommateur_contact_email,
       prm_nom,
     });
@@ -97,7 +97,7 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
       details: {
         facture_id: factureRecord.id,
         numero: factureRecord.numero,
-        url: factureRecord.url,
+        storage_path: storagePath,
         consommateur_prm,
         producteur_prm,
       }

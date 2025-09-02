@@ -18,7 +18,6 @@ import { sendEmail } from '../sendEmail.js';
 export async function notifyConsommateur({
   facture_id,
   numero,
-  facture_url,
   email_consommateur,
   prm_nom,
 }) {
@@ -26,12 +25,13 @@ export async function notifyConsommateur({
     console.log(`📧 Notification du consommateur à l'adresse ${email_consommateur} pour mise à disposition de la facture ${numero} du producteur ${prm_nom}.`);
 
     // 1️⃣ Construire l'email
+    const downloadUrl = `${BACKEND_BASE_URL}/factures/${facture_id}`;
     const subject = `Votre facture ${numero} est disponible`;
     const html = `
       <p>Bonjour,</p>
       <p>Votre facture <strong>${numero} de</strong> ${prm_nom} <strong>est disponible.</p>
       <p>Vous pouvez la télécharger via le lien suivant :</p>
-      <p><a href="${facture_url}">📄 Télécharger ma facture</a></p>
+      <p><a href="${downloadUrl}">📄 Télécharger ma facture</a></p>
       <p>Cordialement,<br>L'équipe Helioze</p>
     `;
 

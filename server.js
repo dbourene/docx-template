@@ -7,6 +7,7 @@ import generateRouter from './routers/generate.js';
 import signatureProducteurRouter from './routers/signatureProducteur.js';
 import operationsRouter from './routers/operations.js';
 import enedisFacturationRouter from "./routers/enedisFacturation.js";
+import facturesRouters from './routers/factures.js';
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,6 +21,7 @@ app.use('/generate', generateRouter);
 app.use('/signature-producteur', signatureProducteurRouter);
 app.use('/operations', operationsRouter);
 app.use("/enedis", enedisFacturationRouter);
+app.use('/factures', facturesRouters);
 
 // Route de base pour vérifier que le serveur est en ligne - à utiliser pour les tests 
 app.get('/', (req, res) => {
