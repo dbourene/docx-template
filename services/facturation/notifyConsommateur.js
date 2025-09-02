@@ -36,8 +36,8 @@ export async function notifyConsommateur({
     `;
 
     await sendEmail({
-      from: 'Helioze <facturation@notifications.helioze.fr>',
-      to: email_consommateur,
+      from: 'onboarding@resend.dev', // remplacer par Helioze <facturation@notifications.helioze.fr>', puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
+      to: 'dbourene@audencia.com', // remplacer par email_consommateur
       subject,
       html,
     });
