@@ -26,6 +26,7 @@ export async function notifyConsommateur({
     console.log(`📧 Notification du consommateur à l'adresse ${email_consommateur} pour mise à disposition de la facture ${numero} du producteur ${prm_nom}.`);
 
     // 1️⃣ Construire l'email
+    console.log("🔎 BACKEND_BASE_URL =", process.env.BACKEND_BASE_URL);
     const downloadUrl = `${process.env.BACKEND_BASE_URL}/factures/${facture_id}`;
     const subject = `Votre facture ${numero} est disponible`;
     const html = `

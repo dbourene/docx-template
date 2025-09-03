@@ -19,6 +19,7 @@ export async function updateFactureTable({
   producteur_prm,
   numero,
   url,
+  storage_path,
   type_facture
 }) {
   try {
@@ -36,6 +37,7 @@ export async function updateFactureTable({
           date_facture,
           date_reglement_du,
           facture_url: url,
+          storage_path,
           date_notification: null, // sera rempli après envoi du mail
           type_facture,
           producteur_prm,
@@ -44,7 +46,7 @@ export async function updateFactureTable({
       ])
       .select()
       .single();
-
+    console.log("🗃️ data enregistrée dans la table factures =", data);
     if (error) throw error;
 
     console.log(`✅ Facture ${numero} insérée avec succès (contrat ${contrat_id})`);

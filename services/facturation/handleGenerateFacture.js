@@ -56,6 +56,7 @@ export async function handleGenerateFacture(consommateur_prm, producteur_prm, co
     const { publicUrl } = await uploadToSupabase(pdfPath, storagePath, 'factures');
 
     console.log('⬆️ Facture PDF uploadée vers Supabase Storage :', publicUrl);
+    console.log('🗂️ Chemin de stockage interne :', storagePath);
 
     // 7️⃣ Mettre à jour la table factures
     const factureRecord = await updateFactureTable({
