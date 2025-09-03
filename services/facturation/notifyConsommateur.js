@@ -1,6 +1,7 @@
 // services/facturation/notifyConsommateur.js
 
 import supabase from '../../lib/supabaseClient.js';
+import dotenv from 'dotenv';
 import { sendEmail } from '../sendEmail.js';
 
 /**
@@ -25,7 +26,7 @@ export async function notifyConsommateur({
     console.log(`📧 Notification du consommateur à l'adresse ${email_consommateur} pour mise à disposition de la facture ${numero} du producteur ${prm_nom}.`);
 
     // 1️⃣ Construire l'email
-    const downloadUrl = `${BACKEND_BASE_URL}/factures/${facture_id}`;
+    const downloadUrl = `${process.env.BACKEND_BASE_URL}/factures/${facture_id}`;
     const subject = `Votre facture ${numero} est disponible`;
     const html = `
       <p>Bonjour,</p>
