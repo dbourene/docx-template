@@ -68,7 +68,7 @@ export async function handleAutorisationCommunication(data) {
         prenom_nom,
         adresse,
         prm,
-        date_validite: new Date(new Date().setMonth(new Date().getMonth() + 24)), // +24 mois
+        date_fin_validite: new Date(new Date().setMonth(new Date().getMonth() + 24)), // +24 mois
       },
     ])
     .select()
