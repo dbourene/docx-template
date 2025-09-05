@@ -14,7 +14,7 @@ export async function handleAutorisationCommunication(data) {
   if (role === "consommateur") {
     const { data: consommateur, error: errCons } = await supabase
       .from("consommateurs")
-      .select("contact_prenom, contact_nom, adresse, prm")
+      .select("id, contact_prenom, contact_nom, adresse, prm")
       .eq("user_id", user_id)
       .single();
     console.log("Consommateur trouvé:", consommateur, "data:", data);
@@ -26,7 +26,7 @@ export async function handleAutorisationCommunication(data) {
   } else if (role === "producteur") {
     const { data: producteur, error: errProd } = await supabase
       .from("producteurs")
-      .select("contact_prenom, contact_nom, adresse")
+      .select("id, contact_prenom, contact_nom, adresse")
       .eq("user_id", user_id)
       .single();
     console.log("Producteur trouvé:", producteur, "data:", data);
