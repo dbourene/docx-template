@@ -4,7 +4,7 @@ import supabase from "../../lib/supabaseClient.js";
 
 // Service pour gérer l'autorisation de communication des données
 export async function handleAutorisationCommunication(data) {
-  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP } = data;
+  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP, validation_cgu } = data;
   console.log("Données reçues pour autorisation communication:", data);
 
   // Validation des entrées
@@ -52,7 +52,7 @@ export async function handleAutorisationCommunication(data) {
 
   // Insertion dans la table autorisation_communication_donnees
   console.log("Insertion de l'autorisation de communication dans la base de données avec les données:", { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP, prenom_nom, adresse, prm });
-  const { data: insert, error: errInsert } = await supabase
+  const { data: insertAutorisation, error: errInsertAutorisation } = await supabase
     .from("autorisation_communication_donnees")
     .insert([
       {
@@ -74,7 +74,31 @@ export async function handleAutorisationCommunication(data) {
     .select()
     .single();
 
-  if (errInsert) throw new Error(errInsert.message);
+  if (errInsertAutorisation) throw new Error(errInsertAutorisation.message);
 
-  return insert;
+  // Insertion dans la table cgus
+  console.log("Insertion dans cgus:", { user_id, adresse_IP, role, prenom_nom, adresse, prm, validation_cgu });
+
+  const { data: insertCgus, error: errInsertCgus } = await supabase
+    .from("cgus")
+    .insert([
+      {
+        user_id,
+        adresse_ip: adresse_IP,
+        role,
+        prenom_nom,
+        adresse,
+        prm,
+        validation_cgu
+      },
+    ])
+    .select()
+    .single();
+
+  if (errInsertCgus) throw new Error(errInsertCgus.message);
+
+  return {
+    autorisation: insertAutorisation,
+    cgu: insertCgus
+  };
 }

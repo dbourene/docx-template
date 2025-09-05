@@ -12,7 +12,7 @@ router.post("/autorisation-communication", async (req, res) => {
       req.headers["x-forwarded-for"]?.split(",")[0] ||
       req.socket.remoteAddress;
 
-    const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation } = req.body;
+    const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, validation_cgu } = req.body;
 
     if (!user_id || !role) {
       return res.status(400).json({ error: "user_id et role sont obligatoires" });
@@ -28,6 +28,7 @@ router.post("/autorisation-communication", async (req, res) => {
       donnees_techniques,
       habilitation,
       adresse_IP: ip,
+      validation_cgu
     });
 
     res.status(201).json(result);
