@@ -5,7 +5,9 @@ import supabase from "../../lib/supabaseClient.js";
 // Service pour gérer l'autorisation de communication des données
 export async function handleAutorisationCommunication(data) {
   const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP } = data;
-
+  console.log("Données reçues pour autorisation communication:", data);
+  
+  // Validation des entrées
   // Récupération des infos complémentaires
   let prenom_nom, adresse, prm;
 
@@ -13,7 +15,7 @@ export async function handleAutorisationCommunication(data) {
     const { data: consommateur, error: errCons } = await supabase
       .from("consommateurs")
       .select("contact_prenom, contact_nom, adresse, prm")
-      .eq("id", user_id)
+      .eq("user_id", user_id)
       .single();
 
     if (errCons) throw new Error(errCons.message);
@@ -25,7 +27,7 @@ export async function handleAutorisationCommunication(data) {
     const { data: producteur, error: errProd } = await supabase
       .from("producteurs")
       .select("contact_prenom, contact_nom, adresse")
-      .eq("id", user_id)
+      .eq("user_id", user_id)
       .single();
 
     if (errProd) throw new Error(errProd.message);
@@ -33,7 +35,7 @@ export async function handleAutorisationCommunication(data) {
     const { data: installation, error: errInst } = await supabase
       .from("installations")
       .select("prm")
-      .eq("producteur_id", user_id)
+      .eq("producteur_id", producteur.id)
       .limit(1)
       .single();
 
