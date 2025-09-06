@@ -1,10 +1,10 @@
-// services/dac/autorisationCommunicationService.js
+// services/autorisations/autorisationCommunicationDonnees.js
 
 import supabase from "../../lib/supabaseClient.js";
 
 // Service pour gérer l'autorisation de communication des données
 export async function handleAutorisationCommunication(data) {
-  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP, validation_cgu } = data;
+  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP } = data;
   console.log("Données reçues pour autorisation communication:", data);
 
   // Validation des entrées
@@ -76,29 +76,7 @@ export async function handleAutorisationCommunication(data) {
 
   if (errInsertAutorisation) throw new Error(errInsertAutorisation.message);
 
-  // Insertion dans la table cgus
-  console.log("Insertion dans cgus:", { user_id, adresse_IP, role, prenom_nom, adresse, prm, validation_cgu });
-
-  const { data: insertCgus, error: errInsertCgus } = await supabase
-    .from("cgus")
-    .insert([
-      {
-        user_id,
-        adresse_ip: adresse_IP,
-        role,
-        prenom_nom,
-        adresse,
-        prm,
-        validation_cgu
-      },
-    ])
-    .select()
-    .single();
-
-  if (errInsertCgus) throw new Error(errInsertCgus.message);
-
   return {
-    autorisation: insertAutorisation,
-    cgu: insertCgus
+    autorisation: insertAutorisation
   };
 }
