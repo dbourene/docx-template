@@ -66,8 +66,7 @@ export async function handleAutorisationParticipation(data) {
         adresse_ip: adresse_IP,
         prenom_nom,
         adresse,
-        prm,
-        date_fin_validite: new Date(new Date().setMonth(new Date().getMonth() + 24)), // +24 mois
+        prm
       },
     ])
     .select()
