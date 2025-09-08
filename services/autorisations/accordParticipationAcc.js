@@ -1,11 +1,11 @@
-// services/autorisations/autorisationParticipationAcc.js
+// services/autorisations/accordParticipationAcc.js
 
 import supabase from "../../lib/supabaseClient.js";
 
-// Service pour gérer l'autorisation de participation à l'ACC
-export async function handleAutorisationParticipation(data) {
+// Service pour gérer l'accord de participation à l'ACC
+export async function handleAccordParticipation(data) {
   const { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation, adresse_IP } = data;
-  console.log("Données reçues pour autorisation participation à l'ACC:", data);
+  console.log("Données reçues pour l'accord de participation à l'ACC:", data);
 
   // Validation des entrées
   // Récupération des infos complémentaires
@@ -50,9 +50,10 @@ export async function handleAutorisationParticipation(data) {
     throw new Error("Role invalide (doit être 'consommateur' ou 'producteur')");
   }
 
-  // Insertion dans la table autorisation_communication_donnees
-  console.log("Insertion de l'autorisation de participation à l'ACC dans la base de données avec les données:", { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation, adresse_IP, prenom_nom, adresse, prm });
-  const { data: insertAutorisation, error: errInsertAutorisation } = await supabase
+  // Insertion dans la table accord_participation_acc
+  console.log("Table cible: accord_participation_acc");
+  console.log("📥 Insertion de l'accord de participation à l'ACC dans la base de données avec les données:", { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation, adresse_IP, prenom_nom, adresse, prm });
+  const { data: insertAccord, error: errInsertAccord } = await supabase
     .from("accord_participation_acc")
     .insert([
       {
@@ -72,9 +73,12 @@ export async function handleAutorisationParticipation(data) {
     .select()
     .single();
 
-  if (errInsertAutorisation) throw new Error(errInsertAutorisation.message);
+  if (errInsertAccord) {
+    console.error("❌ Erreur insertion ACC:", errInsertAccord);
+    throw new Error(errInsertAccord.message);
+  }
 
   return {
-    autorisation: insertAutorisation
+    accord: insertAccord
   };
 }

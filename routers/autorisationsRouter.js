@@ -2,7 +2,7 @@
 
 import express from "express";
 import { handleAutorisationCommunication } from "../services/autorisations/autorisationCommunicationDonnees.js";
-import { handleAutorisationParticipation } from "../services/autorisations/autorisationParticipationAcc.js";
+import { handleAccordParticipation } from "../services/autorisations/accordParticipationAcc.js";
 import { handleAcceptationCGU } from "../services/autorisations/acceptationCgu.js"; 
 
 const router = express.Router();
@@ -57,9 +57,9 @@ router.post("/autorisation-communication", async (req, res) => {
   }
 });
 
-// POST /autorisation-participation-acc
-// Enregistrement de l'autorisation de participation à l'ACC
-router.post("/autorisation-participation-acc", async (req, res) => {
+// POST /accord-participation-acc
+// Enregistrement de l'accord de participation à l'ACC
+router.post("/accord-participation-acc", async (req, res) => {
   try {
     const ip = getClientIp(req);
     const {
@@ -76,7 +76,7 @@ router.post("/autorisation-participation-acc", async (req, res) => {
       return res.status(400).json({ error: "user_id, role et accord_participation sont obligatoires" });
     }
 
-    const result = await handleAutorisationParticipation({
+    const result = await handleAccordParticipation({
       user_id,
       role,
       collecte_cdc,
@@ -89,8 +89,8 @@ router.post("/autorisation-participation-acc", async (req, res) => {
 
     res.status(201).json(result);
   } catch (error) {
-    console.error("Erreur autorisation participation à l'ACC:", error);
-    res.status(500).json({ error: "Erreur lors de l'enregistrement de l'autorisation de participation à l'ACC" });
+    console.error("Erreur accord participation à l'ACC:", error);
+    res.status(500).json({ error: "Erreur lors de l'enregistrement de l'accord de participation à l'ACC" });
   }
 });
 
