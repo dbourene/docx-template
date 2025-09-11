@@ -160,7 +160,7 @@ export async function sendAnnexe21OrNotification(contratId) {
     // Envoi du mail avec la PJ
     console.log('[Annexe21] Envoi du mail à ENEDIS avec la PJ...');    
     await sendEmail({
-      from: 'Helioze <enedis@notifications.helioze.fr>', // temporairement puis remplacer par Kinjo <enedis@notifications.kinjoenergies.com>
+      from: 'Helioze <onboarding@resend.dev>', // Helioze <enedis@notifications.helioze.fr>', // temporairement puis remplacer par Kinjo <enedis@notifications.kinjoenergies.com>
       to: 'dbourene@audencia.com', // temporairement puis remplacer par : enedis.mail_acc_enedis,
       subject: `Déclaration préalable d'ACC sur la commune de ${installation.commune}`,
       html: `Bonjour,<br><br>
