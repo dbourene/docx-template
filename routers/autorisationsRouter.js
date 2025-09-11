@@ -4,6 +4,7 @@ import express from "express";
 import { handleAutorisationCommunication } from "../services/autorisations/autorisationCommunicationDonnees.js";
 import { handleAccordParticipation } from "../services/autorisations/accordParticipationAcc.js";
 import { handleAcceptationCGU } from "../services/autorisations/acceptationCgu.js"; 
+import { handleRenoncementDroitRetractation } from "../services/autorisations/renoncementDroitRetractation.js";
 
 const router = express.Router();
 
@@ -91,6 +92,37 @@ router.post("/accord-participation-acc", async (req, res) => {
   } catch (error) {
     console.error("Erreur accord participation à l'ACC:", error);
     res.status(500).json({ error: "Erreur lors de l'enregistrement de l'accord de participation à l'ACC" });
+  }
+});
+
+// POST /renoncement-droit-retractation
+// Enregistrement du renoncement au droit de rétractation
+router.post("/renoncement-droit-retractation", async (req, res) => {
+  try {
+    const ip = getClientIp(req);
+    const { 
+      user_id,
+      role,
+      type,
+      renoncement_retractation
+    } = req.body;
+
+    if (!user_id || !role || !type || !renoncement_retractation) {
+      return res.status(400).json({ error: "user_id, role et renoncement_retractation sont obligatoires" });
+    }
+
+    const result = await handleRenoncementDroitRetractation({
+      user_id,
+      role,
+      type,
+      renoncement_retractation,
+      adresse_IP: ip
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Erreur renoncement droit de rétractation:", error);
+    res.status(500).json({ error: "Erreur lors de l'enregistrement du renoncement au droit de rétractation" });
   }
 });
 

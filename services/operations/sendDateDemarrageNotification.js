@@ -70,7 +70,7 @@ export async function sendDateDemarrageNotification(operationId) {
       return { success: false, error: `Email du producteur manquant pour l'opération ${operationId}` };
     } else {
       await sendEmail({
-        from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
+        from: 'Helioze <onboarding@resend.dev>', // 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
         to: producteurEmail,
         subject: `Confirmation date de mise en service - ACC ${operation.numero_acc}`,
         html: `
