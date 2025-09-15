@@ -1,3 +1,4 @@
+// services/common/signPdf.js
 // Signe un PDF en ajoutant une signature avec le nom, le rôle et la date du signataire
 // et sauvegarde le PDF signé à un emplacement spécifié
 
@@ -26,12 +27,14 @@ export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
     const { width, height } = lastPage.getSize();
 
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const text = `Signé par : ${signataire.id} (${signataire.role}) le ${new Date(signataire.date).toLocaleString()}`;
+    const text = `Signé par : ${signataire.id} (${signataire.role})\n` +
+    `le ${new Date(signataire.date).toLocaleString()}\n` +
+    `IP : ${signataire.ip || 'IP inconnue'}`;
 
     // Positionnement du texte en bas à gauche, avec un décalage un peu plus haut pour le producteur
-    let y = 150;
+    let y = 250;
     if (signataire.role === 'producteur') {
-      y = 170;  // quelques pixels au-dessus
+      y = 220;  
     }
     
     

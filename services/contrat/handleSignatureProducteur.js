@@ -1,3 +1,7 @@
+// services/contrat/handleSignatureProducteur.js
+// Orchestre le flux de signature d'un contrat CPV par le producteur
+// Télécharge le PDF, le signe, l'upload, met à jour la BDD et envoie une notification au consommateur  
+
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
@@ -183,11 +187,14 @@ export const handleSignatureProducteur = async (req, res) => {
 
   // Étape 5 : Signature du PDF
   try {
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+    console.log('🌐 Adresse IP du client:', ip);
     console.log('✍️ Étape 5 : Signature du PDF...');
     await signPdf(Buffer.from(pdfBuffer), tempPath, {
       id: user_id,
       role: 'producteur',
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      ip: ip
     });
     console.log('✅ PDF signé avec succès');
 
@@ -291,15 +298,16 @@ export const handleSignatureProducteur = async (req, res) => {
     });
   }
 
-  // Étape 9 : Mise à jour du contrat
+  // Étape 9 : Mise à jour de la table contrats
   try {
-    console.log('📝 Étape 9 : Mise à jour du contrat...');
+    console.log('📝 Étape 9 : Mise à jour de la table contrats...');
     const { error: updateError } = await supabase
       .from('contrats')
       .update({
         date_signature_producteur: now,
         statut: nouveauStatut,
-        url_document: publicUrl
+        url_document: publicUrl,
+        consommateur_IP: ip,
       })
       .eq('id', contrat_id);
 

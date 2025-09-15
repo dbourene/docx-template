@@ -1,3 +1,4 @@
+// services/contrat/handleGenerateContrat.js
 // Orchestre le flux de génération d'un contrat CPV
 // Génère le .docx, le convertit en PDF, le signe, l'upload et met à jour la BDD
 
@@ -68,10 +69,15 @@ export const handleGenerateContrat = async (req, res) => {
     if (!userInfo || !userInfo.email || !userInfo.prenom) {
       throw new Error('Utilisateur non trouvé ou email/prénom manquant dans consommateurs ou producteurs');
     }
+    
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+    console.log('🌐 Adresse IP du client:', ip);
+
     const signataire = {
       id: userInfo.user_id, // ← auth.users.id
       role: userInfo.role,
       date: new Date().toISOString(),
+      ip: ip,
     };
     console.log('✍️ Signature du PDF...');
 
@@ -87,7 +93,8 @@ export const handleGenerateContrat = async (req, res) => {
     const statut = await determineStatutContrat(contrat_id);
     await updateContratInDatabase(contrat_id, {
       statut,
-      url_document: publicUrl
+      url_document: publicUrl,
+      consommateur_IP: ip,
     });
 
     // 🔄 Mise à jour du fichier annexe21 lié à l'opération
