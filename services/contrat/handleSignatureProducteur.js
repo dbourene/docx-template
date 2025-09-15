@@ -22,17 +22,13 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export const handleSignatureProducteur = async (req, res) => {
 
   let consommateur_id; // Déclaré ici pour l'utiliser dans la fonction de signature
+  let ip = ''; // sera rempli à l'étape 5 et réutilisé à l'étape 9
 
  // 🧾 LOGS DE DEBUG
   console.log('📩 Requête reçue pour signature producteur');
   console.log('🔍 Headers:', req.headers);
   console.log('🔍 Body:', req.body);
-
-  const { contrat_id } = req.body;
-  const ipHeader = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
-  const ip = Array.isArray(ipHeader) ? ipHeader[0] : ipHeader.split(',')[0].trim();
-  console.log('🌐 Adresse IP du client (x-forwarded-for ou remoteAddress):', ip);
-
+  
   if (!contrat_id) {
     console.warn('⚠️ contrat_id manquant ou corps vide');
     return res.status(400).json({
@@ -190,7 +186,7 @@ export const handleSignatureProducteur = async (req, res) => {
 
   // Étape 5 : Signature du PDF
   try {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+    ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
     console.log('🌐 Adresse IP du client:', ip);
     console.log('✍️ Étape 5 : Signature du PDF...');
     await signPdf(Buffer.from(pdfBuffer), tempPath, {
@@ -329,9 +325,9 @@ export const handleSignatureProducteur = async (req, res) => {
       console.log(`📄 Lancement de la mise à jour de l'annexe 21 pour le contrat ${contrat_id}...`);
       await updateAnnexe21AfterSignature(contrat_id);
       console.log(`✅ Annexe 21 mise à jour avec succès pour le contrat ${contrat_id}`);
-  } catch (error) {
+    } catch (error) {
     console.error(`❌ Erreur lors de la mise à jour de l'annexe 21 pour le contrat ${contrat_id} :`, error);
-  }
+    }
 
     // Étape 11 : Envoi de l'annexe 21 à ENEDIS ou de l'email de notification
     try {
@@ -368,7 +364,7 @@ export const handleSignatureProducteur = async (req, res) => {
 
     await sendEmail({
       from: 'Helioze <onboarding@resend.dev>',// puis remplacer par 'Helioze <no-reply@notifications.helioze.fr>',
-      to: consommateurInfo.email,
+      to: ['dbourene@audencia.com'], // puis remplacer par consommateurInfo.email,
       subject: emailSubject,
       html: emailHtml
     });
