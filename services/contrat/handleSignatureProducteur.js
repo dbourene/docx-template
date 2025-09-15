@@ -29,6 +29,9 @@ export const handleSignatureProducteur = async (req, res) => {
   console.log('🔍 Body:', req.body);
 
   const { contrat_id } = req.body;
+  const ipHeader = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+  const ip = Array.isArray(ipHeader) ? ipHeader[0] : ipHeader.split(',')[0].trim();
+  console.log('🌐 Adresse IP du client (x-forwarded-for ou remoteAddress):', ip);
 
   if (!contrat_id) {
     console.warn('⚠️ contrat_id manquant ou corps vide');
@@ -364,7 +367,7 @@ export const handleSignatureProducteur = async (req, res) => {
     console.log('📧 Envoi de l’email de notification à', consommateurInfo.email);
 
     await sendEmail({
-      from: 'Helioze <no-reply@notifications.helioze.fr>',
+      from: 'Helioze <onboarding@resend.dev>',// puis remplacer par 'Helioze <no-reply@notifications.helioze.fr>',
       to: consommateurInfo.email,
       subject: emailSubject,
       html: emailHtml

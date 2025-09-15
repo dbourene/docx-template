@@ -32,9 +32,9 @@ export default async function signPdf(pdfBuffer, outputPdfPath, signataire = {
     `IP : ${signataire.ip || 'IP inconnue'}`;
 
     // Positionnement du texte en bas à gauche, avec un décalage un peu plus haut pour le producteur
-    let y = 250;
+    let y = 500;
     if (signataire.role === 'producteur') {
-      y = 220;  
+      y = 250;  
     }
     
     
