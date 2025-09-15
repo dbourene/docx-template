@@ -184,8 +184,8 @@ export async function sendAnnexe21OrNotification(contratId) {
     // Attendre 1 seconde avant d'envoyer au producteur
     await delay(1000);
     await sendEmail({
-      from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
-      to: producteur.email,
+      from: 'Helioze <onboarding@resend.dev>', // temporairement puis remplacer par 'Helioze enedis@notifications.helioze.fr'
+      to: 'dbourene@audencia.com', // temporairement puis remplacer par producteur.email
       subject: 'Traitement du contrat en cours',
       html: `Bonjour ${producteur.prenom},<br><br>Nous avons le plaisir de vous informer que votre contrat est cours de traitement. 
              Une date de mise en service vous sera communiquée dans les prochains jours.`
@@ -194,8 +194,8 @@ export async function sendAnnexe21OrNotification(contratId) {
     // Attendre 1 seconde avant d'envoyer au consommateur
     await delay(1000);
     await sendEmail({
-      from: 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
-      to: consommateur.email,
+      from: 'Helioze <onboarding@resend.dev>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
+      to: 'dbourene@audencia.com', // temporairement puis remplacer par consommateur.email
       subject: 'Traitement du contrat en cours',
       html: `Bonjour ${consommateur.prenom},<br><br>Nous avons le plaisir de vous informer que votre contrat est cours de traitement. 
              Une date de mise en service vous sera communiquée dans les prochains jours.`
