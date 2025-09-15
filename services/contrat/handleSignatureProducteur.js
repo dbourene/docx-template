@@ -29,6 +29,8 @@ export const handleSignatureProducteur = async (req, res) => {
   console.log('🔍 Headers:', req.headers);
   console.log('🔍 Body:', req.body);
   
+  const { contrat_id } = req.body;
+  
   if (!contrat_id) {
     console.warn('⚠️ contrat_id manquant ou corps vide');
     return res.status(400).json({
