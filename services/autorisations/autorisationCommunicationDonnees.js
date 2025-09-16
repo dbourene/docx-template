@@ -1,12 +1,22 @@
 // services/autorisations/autorisationCommunicationDonnees.js
 
 import supabase from "../../lib/supabaseClient.js";
-import { getClientIp } from "../common/getClientIp.js";
+
 
 // Service pour gérer l'autorisation de communication des données
-export async function handleAutorisationCommunication(data, req) {
-  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation } = data;
-  const ip = getClientIp(req);
+export async function handleAutorisationCommunication(data) {
+  const { 
+    user_id,
+    ip,
+    role,
+    donnees_mesures,
+    donnees_index,
+    donnees_pmax,
+    donnees_cdc,
+    donnees_techniques,
+    habilitation
+  } = data;
+
   console.log("Données reçues pour autorisation communication:", data);
 
   // Validation des entrées

@@ -1,13 +1,19 @@
 // services/autorisations/renoncementDroitRetractation.js
 
 import supabase from "../../lib/supabaseClient.js";
-import { getClientIp } from "../common/getClientIp.js";
+
 
 // Service pour gérer le renoncement au droit de rétractation
 export async function handleRenoncementDroitRetractation(data, req) {
 
-    const { user_id, role, type, renoncement_retractation } = data;
-    const ip = getClientIp(req);
+    const { 
+        user_id,
+         ip,
+         role,
+        type,
+        renoncement_retractation
+    } = data;
+    
     console.log("Données reçues pour renoncement au droit de rétractation:", data);
 
     // Validation des entrées

@@ -5,6 +5,7 @@ import { handleAutorisationCommunication } from "../services/autorisations/autor
 import { handleAccordParticipation } from "../services/autorisations/accordParticipationAcc.js";
 import { handleAcceptationCGU } from "../services/autorisations/acceptationCgu.js"; 
 import { handleRenoncementDroitRetractation } from "../services/autorisations/renoncementDroitRetractation.js";
+import { getClientIp } from "../services/common/getClientIp.js";
 
 const router = express.Router();
 
@@ -12,6 +13,7 @@ const router = express.Router();
 // Enregistrement de l'autorisation de communication des données
 router.post("/autorisation-communication", async (req, res) => {
   try {
+    const ip = getClientIp(req);
     const { 
       user_id,
       role,
@@ -30,6 +32,7 @@ router.post("/autorisation-communication", async (req, res) => {
 
     const result = await handleAutorisationCommunication({
       user_id,
+      ip,
       role,
       donnees_mesures,
       donnees_index,
@@ -51,6 +54,7 @@ router.post("/autorisation-communication", async (req, res) => {
 // Enregistrement de l'accord de participation à l'ACC
 router.post("/accord-participation-acc", async (req, res) => {
   try {
+    const ip = getClientIp(req);
     const {
       user_id,
       role,
@@ -67,13 +71,13 @@ router.post("/accord-participation-acc", async (req, res) => {
 
     const result = await handleAccordParticipation({
       user_id,
+      ip,
       role,
       collecte_cdc,
       transmission_fournisseur,
       transmission_tiers_cons,
       transmission_tiers_prod,
       accord_participation,
-    
     });
 
     res.status(201).json(result);
@@ -87,6 +91,7 @@ router.post("/accord-participation-acc", async (req, res) => {
 // Enregistrement du renoncement au droit de rétractation
 router.post("/renoncement-droit-retractation", async (req, res) => {
   try {
+    const ip = getClientIp(req);
     const { 
       user_id,
       role,
@@ -100,6 +105,7 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
 
     const result = await handleRenoncementDroitRetractation({
       user_id,
+      ip,
       role,
       type,
       renoncement_retractation
@@ -116,6 +122,7 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
 // Enregistrement de l'acceptation des CGU
 router.post("/acceptation-cgu", async (req, res) => {
   try {
+    const ip = getClientIp(req);
     const { 
       user_id,
       role,
@@ -128,6 +135,7 @@ router.post("/acceptation-cgu", async (req, res) => {
 
     const result = await handleAcceptationCGU({
       user_id,
+      ip,
       role,
       validation_cgu
     });

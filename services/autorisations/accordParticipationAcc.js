@@ -1,12 +1,21 @@
 // services/autorisations/accordParticipationAcc.js
 
 import supabase from "../../lib/supabaseClient.js";
-import { getClientIp } from "../common/getClientIp.js";
+
 
 // Service pour gérer l'accord de participation à l'ACC
-export async function handleAccordParticipation(data, req) {
-  const { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation } = data;
-  const ip = getClientIp(req);
+export async function handleAccordParticipation(data) {
+  const { 
+    user_id,
+    ip,
+    role,
+    collecte_cdc,
+    transmission_fournisseur,
+    transmission_tiers_cons,
+    transmission_tiers_prod,
+    accord_participation
+  } = data;
+
   console.log("Données reçues pour l'accord de participation à l'ACC:", data);
 
   // Validation des entrées
