@@ -1,10 +1,12 @@
 // services/autorisations/accordParticipationAcc.js
 
 import supabase from "../../lib/supabaseClient.js";
+import { getClientIp } from "../../common/getClientIp.js";
 
 // Service pour gérer l'accord de participation à l'ACC
-export async function handleAccordParticipation(data) {
-  const { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation, adresse_IP } = data;
+export async function handleAccordParticipation(data, req) {
+  const { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation } = data;
+  const ip = getClientIp(req);
   console.log("Données reçues pour l'accord de participation à l'ACC:", data);
 
   // Validation des entrées
@@ -52,7 +54,9 @@ export async function handleAccordParticipation(data) {
 
   // Insertion dans la table accord_participation_acc
   console.log("Table cible: accord_participation_acc");
-  console.log("📥 Insertion de l'accord de participation à l'ACC dans la base de données avec les données:", { user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation, adresse_IP, prenom_nom, adresse, prm });
+  console.log("📥 Insertion de l'accord de participation à l'ACC dans la base de données avec les données:", {
+    user_id, role, collecte_cdc, transmission_fournisseur, transmission_tiers_cons, transmission_tiers_prod, accord_participation, ip, prenom_nom, adresse, prm
+  });
   const { data: insertAccord, error: errInsertAccord } = await supabase
     .from("accord_participation_acc")
     .insert([
@@ -64,7 +68,7 @@ export async function handleAccordParticipation(data) {
         transmission_tiers_cons,
         transmission_tiers_prod,
         accord_participation,
-        adresse_ip: adresse_IP,
+        adresse_ip: ip,
         prenom_nom,
         adresse,
         prm

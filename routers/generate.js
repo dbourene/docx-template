@@ -1,3 +1,4 @@
+// routers/generate.js
 // Définit le endpoint POST /generate
 
 import express from 'express';

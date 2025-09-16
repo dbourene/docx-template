@@ -14,7 +14,8 @@ import { updateContratInDatabase } from './updateContratInDatabase.js';
 import { getUserInfo } from '../common/getUserInfo.js';
 import supabase from '../../lib/supabaseClient.js';
 import { sendEmail } from '../sendEmail.js';
-import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js'
+import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js';
+import { getClientIp } from '../common/getClientIp.js';
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
@@ -70,7 +71,7 @@ export const handleGenerateContrat = async (req, res) => {
       throw new Error('Utilisateur non trouvé ou email/prénom manquant dans consommateurs ou producteurs');
     }
     
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+    const ip = getClientIp(req);
     console.log('🌐 Adresse IP du client:', ip);
 
     const signataire = {

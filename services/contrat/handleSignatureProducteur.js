@@ -12,6 +12,7 @@ import { getUserInfo } from '../common/getUserInfo.js';
 import { sendEmail } from '../sendEmail.js';
 import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js';
 import { sendAnnexe21OrNotification } from '../operations/sendAnnexe21OrNotification.js';
+import { getClientIp } from "../../common/getClientIp.js";
 
 console.log('📥 Entrée dans handleSignatureProducteur');
 
@@ -22,7 +23,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export const handleSignatureProducteur = async (req, res) => {
 
   let consommateur_id; // Déclaré ici pour l'utiliser dans la fonction de signature
-  let ip = ''; // sera rempli à l'étape 5 et réutilisé à l'étape 9
+  let ip = getClientIp(req); // Utilisation de la fonction pour extraire l'IP
 
  // 🧾 LOGS DE DEBUG
   console.log('📩 Requête reçue pour signature producteur');

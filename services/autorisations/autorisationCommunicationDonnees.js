@@ -1,10 +1,12 @@
 // services/autorisations/autorisationCommunicationDonnees.js
 
 import supabase from "../../lib/supabaseClient.js";
+import { getClientIp } from "../../common/getClientIp.js";
 
 // Service pour gérer l'autorisation de communication des données
-export async function handleAutorisationCommunication(data) {
-  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP } = data;
+export async function handleAutorisationCommunication(data, req) {
+  const { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation } = data;
+  const ip = getClientIp(req);
   console.log("Données reçues pour autorisation communication:", data);
 
   // Validation des entrées
@@ -51,7 +53,9 @@ export async function handleAutorisationCommunication(data) {
   }
 
   // Insertion dans la table autorisation_communication_donnees
-  console.log("Insertion de l'autorisation de communication dans la base de données avec les données:", { user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, adresse_IP, prenom_nom, adresse, prm });
+  console.log("Insertion de l'autorisation de communication dans la base de données avec les données:", {
+    user_id, role, donnees_mesures, donnees_index, donnees_pmax, donnees_cdc, donnees_techniques, habilitation, ip, prenom_nom, adresse, prm
+  });
   const { data: insertAutorisation, error: errInsertAutorisation } = await supabase
     .from("autorisation_communication_donnees")
     .insert([
@@ -64,7 +68,7 @@ export async function handleAutorisationCommunication(data) {
         donnees_cdc,
         donnees_techniques,
         habilitation,
-        adresse_ip: adresse_IP,
+        adresse_ip: ip,
         prenom_nom,
         adresse,
         prm,

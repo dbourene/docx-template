@@ -1,11 +1,13 @@
 // services/autorisations/renoncementDroitRetractation.js
 
 import supabase from "../../lib/supabaseClient.js";
+import { getClientIp } from "../../common/getClientIp.js";
 
 // Service pour gérer le renoncement au droit de rétractation
-export async function handleRenoncementDroitRetractation(data) {
+export async function handleRenoncementDroitRetractation(data, req) {
 
-    const { user_id, role, type,adresse_IP, renoncement_retractation } = data;
+    const { user_id, role, type, renoncement_retractation } = data;
+    const ip = getClientIp(req);
     console.log("Données reçues pour renoncement au droit de rétractation:", data);
 
     // Validation des entrées
@@ -34,14 +36,14 @@ export async function handleRenoncementDroitRetractation(data) {
     prm = consommateur.prm;
   
     // Insertion dans la table renoncements
-    console.log("Insertion dans renoncements:", { user_id, adresse_IP, role, prenom_nom, adresse, prm, renoncement_retractation });
+    console.log("Insertion dans renoncements:", { user_id, ip, role, prenom_nom, adresse, prm, renoncement_retractation });
 
     const { data: insertRenoncements, error: errInsertRenoncements } = await supabase
     .from("renoncement_droit_retractation")
     .insert([
         {
         user_id,
-        adresse_ip: adresse_IP,
+        adresse_ip: ip,
         role,
         prenom_nom,
         adresse,

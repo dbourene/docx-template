@@ -1,10 +1,12 @@
 // services/autorisations/acceptationCgu.js
 
 import supabase from "../../lib/supabaseClient.js";
+import { getClientIp } from "../../common/getClientIp.js";
 
 // Service pour gérer l'acceptation des CGU
-export async function handleAcceptationCGU(data) {
-  const { user_id, role, adresse_IP, validation_cgu } = data;
+export async function handleAcceptationCGU(data, req) {
+  const { user_id, role, validation_cgu } = data;
+  const ip = getClientIp(req);
   console.log("Données reçues pour acceptation CGU:", data);
 
   // Validation des entrées
@@ -51,14 +53,14 @@ export async function handleAcceptationCGU(data) {
   }
 
   // Insertion dans la table cgus
-  console.log("Insertion dans cgus:", { user_id, adresse_IP, role, prenom_nom, adresse, prm, validation_cgu });
+  console.log("Insertion dans cgus:", { user_id, ip, role, prenom_nom, adresse, prm, validation_cgu });
 
   const { data: insertCgus, error: errInsertCgus } = await supabase
     .from("cgus")
     .insert([
       {
         user_id,
-        adresse_ip: adresse_IP,
+        adresse_ip: ip,
         role,
         prenom_nom,
         adresse,

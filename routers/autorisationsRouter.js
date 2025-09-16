@@ -8,20 +8,10 @@ import { handleRenoncementDroitRetractation } from "../services/autorisations/re
 
 const router = express.Router();
 
-// Utilitaire pour extraire l'adresse IP du client
-function getClientIp(req) {
-  return (
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress ||
-    null
-  );
-}
-
 // POST /autorisation-communication
 // Enregistrement de l'autorisation de communication des données
 router.post("/autorisation-communication", async (req, res) => {
   try {
-    const ip = getClientIp(req);
     const { 
       user_id,
       role,
@@ -47,7 +37,6 @@ router.post("/autorisation-communication", async (req, res) => {
       donnees_cdc,
       donnees_techniques,
       habilitation,
-      adresse_IP: ip,
       validation_cgu
     });
 
@@ -62,7 +51,6 @@ router.post("/autorisation-communication", async (req, res) => {
 // Enregistrement de l'accord de participation à l'ACC
 router.post("/accord-participation-acc", async (req, res) => {
   try {
-    const ip = getClientIp(req);
     const {
       user_id,
       role,
@@ -85,7 +73,7 @@ router.post("/accord-participation-acc", async (req, res) => {
       transmission_tiers_cons,
       transmission_tiers_prod,
       accord_participation,
-      adresse_IP: ip
+    
     });
 
     res.status(201).json(result);
@@ -99,7 +87,6 @@ router.post("/accord-participation-acc", async (req, res) => {
 // Enregistrement du renoncement au droit de rétractation
 router.post("/renoncement-droit-retractation", async (req, res) => {
   try {
-    const ip = getClientIp(req);
     const { 
       user_id,
       role,
@@ -115,8 +102,7 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
       user_id,
       role,
       type,
-      renoncement_retractation,
-      adresse_IP: ip
+      renoncement_retractation
     });
 
     res.status(201).json(result);
@@ -130,7 +116,6 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
 // Enregistrement de l'acceptation des CGU
 router.post("/acceptation-cgu", async (req, res) => {
   try {
-    const ip = getClientIp(req);
     const { 
       user_id,
       role,
@@ -144,8 +129,7 @@ router.post("/acceptation-cgu", async (req, res) => {
     const result = await handleAcceptationCGU({
       user_id,
       role,
-      validation_cgu,
-      adresse_IP: ip
+      validation_cgu
     });
 
     res.status(201).json(result);
