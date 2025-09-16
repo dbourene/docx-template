@@ -12,7 +12,7 @@ import { getUserInfo } from '../common/getUserInfo.js';
 import { sendEmail } from '../sendEmail.js';
 import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js';
 import { sendAnnexe21OrNotification } from '../operations/sendAnnexe21OrNotification.js';
-import { getClientIp } from "../../common/getClientIp.js";
+import { getClientIp } from "../common/getClientIp.js";
 
 console.log('📥 Entrée dans handleSignatureProducteur');
 

@@ -1,7 +1,7 @@
 // services/autorisations/acceptationCgu.js
 
 import supabase from "../../lib/supabaseClient.js";
-import { getClientIp } from "../../common/getClientIp.js";
+import { getClientIp } from "../common/getClientIp.js";
 
 // Service pour gérer l'acceptation des CGU
 export async function handleAcceptationCGU(data, req) {

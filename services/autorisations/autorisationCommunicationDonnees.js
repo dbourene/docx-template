@@ -1,7 +1,7 @@
 // services/autorisations/autorisationCommunicationDonnees.js
 
 import supabase from "../../lib/supabaseClient.js";
-import { getClientIp } from "../../common/getClientIp.js";
+import { getClientIp } from "../common/getClientIp.js";
 
 // Service pour gérer l'autorisation de communication des données
 export async function handleAutorisationCommunication(data, req) {

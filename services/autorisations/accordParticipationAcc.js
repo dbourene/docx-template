@@ -1,7 +1,7 @@
 // services/autorisations/accordParticipationAcc.js
 
 import supabase from "../../lib/supabaseClient.js";
-import { getClientIp } from "../../common/getClientIp.js";
+import { getClientIp } from "../common/getClientIp.js";
 
 // Service pour gérer l'accord de participation à l'ACC
 export async function handleAccordParticipation(data, req) {
