@@ -8,8 +8,8 @@ export async function handleRenoncementDroitRetractation(data, req) {
 
     const { 
         user_id,
-         ip,
-         role,
+        ip,
+        role,
         type,
         renoncement_retractation
     } = data;

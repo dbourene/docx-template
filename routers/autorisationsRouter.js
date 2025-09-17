@@ -96,11 +96,12 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
       user_id,
       role,
       type,
-      renoncement_retractation
+      renoncement_retractation,
+      prm
     } = req.body;
 
-    if (!user_id || !role || !type || !renoncement_retractation) {
-      return res.status(400).json({ error: "user_id, role et renoncement_retractation sont obligatoires" });
+    if (!user_id || !role || !renoncement_retractation || !prm) {
+      return res.status(400).json({ error: "user_id, role, renoncement_retractation et prm sont obligatoires" });
     }
 
     const result = await handleRenoncementDroitRetractation({
@@ -108,7 +109,8 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
       ip,
       role,
       type,
-      renoncement_retractation
+      renoncement_retractation,
+      prm
     });
 
     res.status(201).json(result);
