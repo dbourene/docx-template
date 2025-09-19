@@ -26,7 +26,7 @@ export async function handleRenoncementDroitRetractation(data, req) {
     // ✅ Récupération du consommateur lié à l'utilisateur
     const { data: consommateur, error: errCons } = await supabase
         .from("consommateurs")
-        .select("id, contact_prenom, contact_nom, adresse, prm")
+        .select("id, contact_prenom, contact_nom, adresse, prm, type")
         .eq("user_id", user_id)
         .single();
         
