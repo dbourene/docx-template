@@ -10,7 +10,6 @@ export async function handleRenoncementDroitRetractation(data, req) {
         user_id,
         ip,
         role,
-        type,
         renoncement_retractation
     } = data;
     
@@ -20,8 +19,8 @@ export async function handleRenoncementDroitRetractation(data, req) {
     // Récupération des infos complémentaires
     let prenom_nom, adresse, prm;
 
-    if (role !== "consommateur" || type !== "particulier") {
-        throw new Error("Le renoncement au droit de rétractation est réservé aux consommateurs particuliers");
+    if (role !== "consommateur") {
+        throw new Error("Le renoncement au droit de rétractation est réservé aux consommateurs");
     }  
         
     // ✅ Récupération du consommateur lié à l'utilisateur
@@ -34,7 +33,12 @@ export async function handleRenoncementDroitRetractation(data, req) {
     if (errCons) throw new Error(errCons.message);
     if(!consommateur) throw new Error("Consommateur non trouvé pour cet user_id");
 
-    console.log("Consommateur trouvé:", consommateur, "data:", data);
+    console.log("👤 Consommateur trouvé:", consommateur, "data:", data);
+
+     // Vérif type directement depuis la DB si le consommateur est un particulier
+    if (!consommateur.type || consommateur.type.toLowerCase() !== "particulier") {
+        throw new Error("Le renoncement au droit de rétractation est réservé aux consommateurs particuliers");
+    }
      
     // Calcul des informations nécessaires
     prenom_nom = `${consommateur.contact_prenom} ${consommateur.contact_nom}`;
@@ -42,7 +46,7 @@ export async function handleRenoncementDroitRetractation(data, req) {
     prm = consommateur.prm;
   
     // Insertion dans la table renoncements
-    console.log("Insertion dans renoncements:", { user_id, ip, role, prenom_nom, adresse, prm, renoncement_retractation });
+    console.log("📝 Insertion dans renoncement_droit_retractation:", { user_id, ip, role, prenom_nom, adresse, prm, renoncement_retractation });
 
     const { data: insertRenoncements, error: errInsertRenoncements } = await supabase
     .from("renoncement_droit_retractation")

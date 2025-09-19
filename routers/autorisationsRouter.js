@@ -95,7 +95,6 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
     const { 
       user_id,
       role,
-      type,
       renoncement_retractation,
       prm
     } = req.body;
@@ -108,7 +107,6 @@ router.post("/renoncement-droit-retractation", async (req, res) => {
       user_id,
       ip,
       role,
-      type,
       renoncement_retractation,
       prm
     });
