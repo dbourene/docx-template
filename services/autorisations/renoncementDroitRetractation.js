@@ -10,14 +10,15 @@ export async function handleRenoncementDroitRetractation(data, req) {
         user_id,
         ip,
         role,
-        renoncement_retractation
+        renoncement_retractation,
+        prm
     } = data;
     
     console.log("Données reçues pour renoncement au droit de rétractation:", data);
 
     // Validation des entrées
     // Récupération des infos complémentaires
-    let prenom_nom, adresse, prm;
+    let prenom_nom, adresse;
 
     if (role !== "consommateur") {
         throw new Error("Le renoncement au droit de rétractation est réservé aux consommateurs");
@@ -28,6 +29,7 @@ export async function handleRenoncementDroitRetractation(data, req) {
         .from("consommateurs")
         .select("id, contact_prenom, contact_nom, adresse, prm, type")
         .eq("user_id", user_id)
+        .eq("prm", prm)
         .single();
         
     if (errCons) throw new Error(errCons.message);
@@ -43,8 +45,7 @@ export async function handleRenoncementDroitRetractation(data, req) {
     // Calcul des informations nécessaires
     prenom_nom = `${consommateur.contact_prenom} ${consommateur.contact_nom}`;
     adresse = consommateur.adresse;
-    prm = consommateur.prm;
-  
+      
     // Insertion dans la table renoncements
     console.log("📝 Insertion dans renoncement_droit_retractation:", { user_id, ip, role, prenom_nom, adresse, prm, renoncement_retractation });
 

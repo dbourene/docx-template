@@ -13,27 +13,29 @@ export async function handleAccordParticipation(data) {
     transmission_fournisseur,
     transmission_tiers_cons,
     transmission_tiers_prod,
-    accord_participation
+    accord_participation,
+    prm
   } = data;
 
   console.log("Données reçues pour l'accord de participation à l'ACC:", data);
 
   // Validation des entrées
   // Récupération des infos complémentaires
-  let prenom_nom, adresse, prm;
+  let prenom_nom, adresse;
 
   if (role === "consommateur") {
     const { data: consommateur, error: errCons } = await supabase
       .from("consommateurs")
       .select("id, contact_prenom, contact_nom, adresse, prm")
       .eq("user_id", user_id)
+      .eq("prm", prm)
       .single();
     console.log("Consommateur trouvé:", consommateur, "data:", data);
     if (errCons) throw new Error(errCons.message);
 
     prenom_nom = `${consommateur.contact_prenom} ${consommateur.contact_nom}`;
     adresse = consommateur.adresse;
-    prm = consommateur.prm;
+    
   } else if (role === "producteur") {
     const { data: producteur, error: errProd } = await supabase
       .from("producteurs")
@@ -53,8 +55,7 @@ export async function handleAccordParticipation(data) {
     if (errInst) throw new Error(errInst.message);
 
     prenom_nom = `${producteur.contact_prenom} ${producteur.contact_nom}`;
-    adresse = producteur.adresse;
-    prm = installation.prm;
+    adresse = producteur.adresse;    
     console.log("Prénom Nom:", prenom_nom, "Adresse:", adresse, "PRM:", prm);
 
   } else {

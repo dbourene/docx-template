@@ -62,11 +62,12 @@ router.post("/accord-participation-acc", async (req, res) => {
       transmission_fournisseur,
       transmission_tiers_cons,
       transmission_tiers_prod,
-      accord_participation
+      accord_participation,
+      prm
     } = req.body;
 
-    if (!user_id || !role || accord_participation === undefined) {
-      return res.status(400).json({ error: "user_id, role et accord_participation sont obligatoires" });
+    if (!user_id || !role || accord_participation === undefined || !prm) {
+      return res.status(400).json({ error: "user_id, role, accord_participation et prm sont obligatoires" });
     }
 
     const result = await handleAccordParticipation({
@@ -78,6 +79,7 @@ router.post("/accord-participation-acc", async (req, res) => {
       transmission_tiers_cons,
       transmission_tiers_prod,
       accord_participation,
+      prm
     });
 
     res.status(201).json(result);
