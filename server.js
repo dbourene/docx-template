@@ -14,7 +14,9 @@ import autorisationsRouter from './routers/autorisationsRouter.js';
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const tempDir = path.join('/app', 'temp');
+const tempDir = path.join(process.cwd(), "temp");  // Ligne modifiée à partir de: const tempDir = path.join('/app', 'temp');
+fs.mkdirSync(tempDir, { recursive: true }); // Crée le dossier temp s'il n'existe pas. Il s'agit d'une ligne ajoutée pour test en local
+console.log(`📁 Dossier temp utilisé : ${tempDir}`);
 const PORT = process.env.PORT || 10000;
 
 app.use(cors());
