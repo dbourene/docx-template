@@ -6,7 +6,7 @@ const router = express.Router();
 
 /**
  * Route temporaire de test avant intégration frontend.
- * Exemple d’appel manuel : POST /repartitions/processMails avec body { "month": "09_2025" }
+ * Exemple d’appel manuel : POST /repartition/processMails avec body { "month": "09_2025" }
  */
 router.post("/processMails", async (req, res) => {
   try {
@@ -24,7 +24,7 @@ router.post("/processMails", async (req, res) => {
       details: result,
     });
   } catch (err) {
-    console.error("❌ Erreur dans /repartitions/processMails:", err);
+    console.error("❌ Erreur dans /repartition/processMails:", err);
     res.status(500).json({ error: err.message });
   }
 });
