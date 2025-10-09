@@ -11,6 +11,7 @@ import operationsRouter from './routers/operations.js';
 import enedisFacturationRouter from "./routers/enedisFacturation.js";
 import facturesRouters from './routers/factures.js';
 import autorisationsRouter from './routers/autorisationsRouter.js';
+import repartitionsRouter from './routers/repartitions.js';
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +29,7 @@ app.use('/operations', operationsRouter);
 app.use("/enedis", enedisFacturationRouter);
 app.use('/factures', facturesRouters);
 app.use('/autorisations', autorisationsRouter);
+app.use('/repartitions', repartitionsRouter);
 
 // Route de base pour vérifier que le serveur est en ligne - à utiliser pour les tests 
 app.get('/', (req, res) => {
