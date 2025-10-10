@@ -1,24 +1,20 @@
 // services/repartition/parseMsg.js
 import fs from "fs";
-import * as MSGReaderLib from "msgreader";
+import pkg from "msgreader"; // support CommonJS et ES Module
+const MSGReader = pkg.MSGReader || pkg.default || pkg;
 
 /**
  * Analyse un mail Outlook (.msg) provenant d'Enedis
  * @param {string} filePath - Chemin du fichier local .msg
- * @returns {Promise<{type, operationId, periode, motDePasse, zipName}>}
+ * @returns {Promise<{type: string, operationId: string, periode: {debut: string, fin: string}, motDePasse: string|null, zipName: string, filePath: string}>}
  */
 export async function parseMsg(filePath) {
   try {
     const buffer = fs.readFileSync(filePath);
-
-    // ✅ Compatibilité ESM / CJS
-    const MSGReader = MSGReaderLib.default || MSGReaderLib.MSGReader;
-    if (!MSGReader) {
-      throw new Error("Impossible d'initialiser MSGReader — vérifie l'import.");
-    }
-
-    const msg = new MSGReader(buffer);
-    const { subject, body } = msg.getFileData();
+    const reader = new MSGReader(buffer);
+    const msgData = reader.getFileData();
+    const subject = msgData.subject || "";
+    const body = msgData.body || "";
 
     // --- Extraction des éléments clés depuis le sujet du mail ---
     const regexOperation = /Convention N°(ACC\d{8,})/i;
