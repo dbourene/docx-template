@@ -12,6 +12,8 @@ import enedisFacturationRouter from "./routers/enedisFacturation.js";
 import facturesRouters from './routers/factures.js';
 import autorisationsRouter from './routers/autorisationsRouter.js';
 import repartitionsRouter from './routers/repartitions.js';
+import { startNovaWatcher } from "./services/repartition/watchNova.js";
+
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -52,6 +54,9 @@ process.on('unhandledRejection', (reason) => {
   console.error('❌ PROMESSE REJETÉE NON GÉRÉE:', reason);
   process.exit(1);
 });
+
+// Démarre la surveillance automatique du dossier NOVA
+startNovaWatcher();
 
 // ✅ Lancer le serveur et garder la référence pour un arrêt propre
 const server = app.listen(PORT, () => {

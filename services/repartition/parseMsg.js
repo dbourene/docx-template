@@ -1,6 +1,7 @@
 // services/repartition/parseMsg.js
 import fs from "fs";
-import { MSGReader } from "msgreader";
+import pkg from 'msgreader';
+const { MSGReader } = pkg;
 
 /**
  * Analyse un mail Outlook (.msg) provenant d'Enedis
