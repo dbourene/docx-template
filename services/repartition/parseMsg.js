@@ -1,6 +1,6 @@
 // services/repartition/parseMsg.js
 import fs from "fs";
-import MSGReader from "msgreader"; // ✅ Import direct (pas de déstructuration)
+import * as MSGReaderLib from "msgreader";
 
 /**
  * Analyse un mail Outlook (.msg) provenant d'Enedis
@@ -11,7 +11,12 @@ export async function parseMsg(filePath) {
   try {
     const buffer = fs.readFileSync(filePath);
 
-    // ✅ Instanciation correcte
+    // ✅ Compatibilité ESM / CJS
+    const MSGReader = MSGReaderLib.default || MSGReaderLib.MSGReader;
+    if (!MSGReader) {
+      throw new Error("Impossible d'initialiser MSGReader — vérifie l'import.");
+    }
+
     const msg = new MSGReader(buffer);
     const { subject, body } = msg.getFileData();
 
@@ -39,9 +44,6 @@ export async function parseMsg(filePath) {
       if (match) motDePasse = match[1];
     }
 
-    console.log(`📧 Analyse du mail : ${subject}`);
-    console.log(`📄 Type détecté : ${type} | Opération : ${operationId}`);
-
     return {
       type,
       operationId,
@@ -50,8 +52,8 @@ export async function parseMsg(filePath) {
       zipName: "export.zip",
       filePath,
     };
-  } catch (err) {
-    console.error(`❌ Erreur lors de la lecture du mail ${filePath}:`, err);
-    throw err;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la lecture du mail ${filePath}:`, error);
+    throw error;
   }
 }
