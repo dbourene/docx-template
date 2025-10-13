@@ -15,6 +15,11 @@ const MSGReader = MsgReaderPkg.default || MsgReaderPkg;
  */
 export async function parseMsg(filePath) {
   try {
+    
+    // Initialisation du nom du zip
+    let zipName = null;
+
+    // --- Lecture du fichier .msg ---
     const buffer = fs.readFileSync(filePath);
     const reader = new MSGReader(buffer); // Utilisation de MSGReader
     reader.getFileData(); // Nécessaire pour initialiser les données
@@ -76,8 +81,8 @@ export async function parseMsg(filePath) {
       if (match) motDePasse = match[1];
     }
 
-    // --- Détection et extraction du fichier ZIP ---
-    let zipName = null;
+    // --- Gestion des pièces jointes ---
+    // Recherche d'une pièce jointe ZIP
 
     if (!isMotDePasse && Array.isArray(msgData.attachments)) {
       console.log(`📎 Pièces jointes détectées dans ${path.basename(filePath)}:`);
@@ -95,64 +100,24 @@ export async function parseMsg(filePath) {
       );
 
       if (zipAttachment) {
-        const data =
-          zipAttachment.fileData ||
-          zipAttachment.dataBuffer ||
-          zipAttachment.content ||
-          null;
+        // --- Extraction directe via Python ---
+        const pythonPath = "python"; // ou chemin complet
+        const scriptPath = path.join(process.cwd(), "services/repartition/extractMsgAttachments.py");
+        const outDir = path.dirname(filePath);
+        const args = [scriptPath, filePath, outDir];
+        console.log("📌 Arguments passés à Python :", args);
 
-        if (data && data.length > 0) {
-          const dir = path.dirname(filePath);
-          const zipPath = path.join(dir, zipAttachment.fileName);
+        const result = spawnSync(pythonPath, args, { encoding: "utf-8" });
+        console.log("📤 stdout Python :\n", result.stdout);
+        console.error("📥 stderr Python :\n", result.stderr);
 
-          // Convertit proprement quel que soit le format
-          const buffer =
-            data instanceof Uint8Array
-              ? Buffer.from(data)
-              : Buffer.isBuffer(data)
-              ? data
-              : Buffer.from(data);
-
-          fs.writeFileSync(zipPath, buffer);
-          console.log(`✅ Fichier ZIP sauvegardé : ${zipPath}`);
-
+        // --- Vérification après extraction ---
+        const extractedZipPath = path.join(outDir, zipAttachment.fileName);
+        if (fs.existsSync(extractedZipPath)) {
           zipName = zipAttachment.fileName;
+          console.log("✅ ZIP détecté et récupéré :", zipName);
         } else {
-          console.warn(
-            `⚠️ Pièce jointe ZIP détectée (${zipAttachment.fileName}) mais vide ou non lisible.`
-          );
-          console.log("🧱 Structure de l’attachement :", Object.keys(zipAttachment));
-
-          // --- Tentative de récupération via un script Python en dernier recours ---
-          if (zipAttachment && (!data || data.length === 0)) {
-            console.warn(`⚠️ Fichier ZIP vide, tentative d'extraction avec Python...`);
-
-            // --- Chemin du script Python ---
-            const pythonPath = "python"; // ou mettre chemin complet si nécessaire
-            const scriptPath = path.join(process.cwd(), "services/repartition/extractMsgAttachments.py");
-
-            // --- Dossier de sortie ---
-            const outDir = path.dirname(filePath);
-
-            // --- Arguments passés à Python ---
-            const args = [scriptPath, filePath, outDir];
-            console.log("📌 Arguments passés à Python :", args);
-
-            // --- Lancement du script Python ---
-            const result = spawnSync(pythonPath, args, {
-              encoding: "utf-8" // pour éviter les problèmes d'encodage
-            });
-
-            // --- Logs détaillés ---
-            console.log("📤 stdout Python :\n", result.stdout);
-            console.error("📥 stderr Python :\n", result.stderr);
-
-            if (result.error) {
-              console.error("❌ Erreur lors de l'exécution de Python :", result.error);
-            } else {
-              console.log("✅ Tentative d'extraction via Python terminée.");
-            }
-          }
+          console.warn(`⚠️ Impossible de récupérer le ZIP via Python : ${zipAttachment.fileName}`);
         }
       }
     }

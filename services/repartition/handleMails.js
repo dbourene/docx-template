@@ -50,15 +50,16 @@ export async function handleMails(month) {
           console.log(`📦 Zip attendu : ${zipPath}`);
 
           if (fs.existsSync(zipPath)) {
-            console.log(`📦 Extraction du zip : ${parsed.zipName}`);
+            console.log(`📦 Extraction du zip vers le dossier temporaire : ${tempDir}`);
             await extractZip(zipPath, tempDir, parsed.motDePasse);
             console.log(`✅ Zip extrait dans ${tempDir}`);
           } else {
-            console.log(`⚠️ Zip non trouvé pour ${file}: ${zipPath}`);
+            console.log(`⚠️ Zip déclaré mais introuvable dans le dossier : ${zipPath}`);
           }
         }
 
         results.push({ file, parsed });
+
       } catch (err) {
         console.error(`❌ Erreur sur ${file}:`, err.message);
         results.push({ file, error: err.message });
@@ -67,6 +68,7 @@ export async function handleMails(month) {
 
     console.log(`✅ Traitement terminé pour ${month}`);
     return results;
+    
   } catch (err) {
     console.error("❌ Erreur dans processMails:", err);
     throw err;
