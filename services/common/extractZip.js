@@ -1,52 +1,49 @@
 // services/repartition/extractZip.js
-// Nécessite l'installation de "node-stream-zip"
-// npm install node-stream-zip
-import StreamZip from "node-stream-zip";
+import { spawn } from "child_process";
 import fs from "fs";
-import path from "path";
 
 /**
- * Décompresse le fichier ZIP en sortie dans le dossier temp du mois
- * @param {string} zipFilePath - Chemin vers le fichier zip
- * @param {string} outputFolder - Dossier où extraire les fichiers
- * @param {string|null} password - Mot de passe si nécessaire
+ * Décompresse un fichier ZIP dans le dossier de sortie en utilisant 7-Zip
+ * @param {string} zipFilePath - Chemin du fichier ZIP
+ * @param {string} outputFolder - Dossier de destination
+ * @param {string} password - Mot de passe pour extraire le ZIP (facultatif)
  */
-
-export async function extractZip(zipFilePath, outputFolder, password = null) {
-  return new Promise(async(resolve, reject) => {
+export async function extractZip(zipFilePath, outputFolder, password = "") {
+  return new Promise((resolve, reject) => {
     console.log("📦 Tentative de décompression du ZIP :", zipFilePath);
 
     if (!fs.existsSync(zipFilePath)) {
-      console.error("❌ Fichier ZIP introuvable :", zipFilePath);
-      return reject(new Error("ZIP introuvable"));
+      return reject(new Error("❌ Fichier ZIP introuvable : " + zipFilePath));
     }
 
     if (!fs.existsSync(outputFolder)) {
       fs.mkdirSync(outputFolder, { recursive: true });
     }
 
-    try {
-      const zip = new StreamZip.async({
-        file: zipFilePath,
-        password: password || undefined, // <-- passe le mot de passe si fourni
-      });
-
-      const entries = await zip.entries();
-
-      for (const entry of Object.values(entries)) {
-        if (entry.isDirectory) continue;
-        const entryPath = path.join(outputFolder, entry.name);
-        await zip.extract(entry.name, entryPath);
-        console.log(`✅ Fichier extrait : ${entryPath}`);
-      }
-
-      await zip.close();
-      resolve(true);
-    } catch (err) {
-      console.error("❌ Erreur lors de la décompression :", err);
-      reject(err);
+    // Construction des arguments pour 7z
+    const args = ["x", zipFilePath, `-o${outputFolder}`, "-y"];
+    
+    if (password) {
+      args.push(`-p${password}`);
+      console.log("🔑 Utilisation du mot de passe pour extraire le ZIP");
     }
+
+    console.log("📌 Commande 7-Zip :", "7z", args.join(" "));
+
+    const unZip = spawn("7z", args, { stdio: "inherit" });
+
+    unZip.on("close", (code) => {
+      if (code === 0) {
+        console.log(`✅ Extraction terminée : ${outputFolder}`);
+        resolve(true);
+      } else {
+        reject(new Error(`❌ Erreur lors de l'extraction ZIP, code ${code}`));
+      }
+    });
+
+    unZip.on("error", (err) => {
+      console.error("❌ Erreur lors de l'extraction ZIP :", err);
+      reject(err);
+    });
   });
 }
-
-
