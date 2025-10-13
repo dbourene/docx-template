@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import chokidar from "chokidar"; // lib pour surveiller les fichiers
-import { processMails } from "./processMails.js";
+import { handleMails } from "./handleMails.js";
 
 /**
  * Surveille le dossier NOVA et déclenche automatiquement le traitement
@@ -10,7 +10,7 @@ import { processMails } from "./processMails.js";
  */
 export function startNovaWatcher() {
   const baseDir = path.join(process.cwd(), "NOVA");
-
+  
   if (!fs.existsSync(baseDir)) {
     fs.mkdirSync(baseDir);
   }
@@ -32,7 +32,7 @@ export function startNovaWatcher() {
       console.log(`📥 Nouveau mail détecté pour ${month}: ${path.basename(filePath)}`);
 
       try {
-        await processMails(month);
+        await handleMails(month);
         console.log(`✅ Traitement automatique terminé pour ${month}`);
       } catch (err) {
         console.error(`❌ Erreur lors du traitement auto (${month}):`, err.message);

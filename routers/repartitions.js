@@ -1,14 +1,14 @@
 // routers/repartitions.js
 import express from "express";
-import { processMails } from "../services/repartition/processMails.js";
+import { handleMails } from "../services/repartition/handleMails.js";
 
 const router = express.Router();
 
 /**
  * Route temporaire de test avant intégration frontend.
- * Exemple d’appel manuel : POST /repartition/processMails avec body { "month": "09_2025" }
+ * Exemple d’appel manuel : POST /repartition/handleMails avec body { "month": "09_2025" }
  */
-router.post("/processMails", async (req, res) => {
+router.post("/handleMails", async (req, res) => {
   try {
     const { month } = req.body;
     if (!month) {
@@ -16,7 +16,7 @@ router.post("/processMails", async (req, res) => {
     }
 
     console.log(`🟢 Déclenchement du traitement Enedis pour le mois ${month}`);
-    const result = await processMails(month);
+    const result = await handleMails(month);
 
     res.json({
       status: "ok",
