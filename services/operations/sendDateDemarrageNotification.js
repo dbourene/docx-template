@@ -71,7 +71,7 @@ export async function sendDateDemarrageNotification(operationId) {
     } else {
       await sendEmail({
         from: 'Helioze <onboarding@resend.dev>', // 'Helioze <no-reply@notifications.helioze.fr>', // temporairement puis remplacer par 'Kinjo <no-reply@notifications.kinjoenergies.com>'
-        to: producteurEmail,
+        to: ['dbourene@audencia.com'], // puis remplacer par producteurEmail,
         subject: `Confirmation date de mise en service - ACC ${operation.numero_acc}`,
         html: `
           <p>Bonjour ${producteur?.name || ''},</p>
