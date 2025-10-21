@@ -16,6 +16,8 @@ import supabase from '../../lib/supabaseClient.js';
 import { sendEmail } from '../sendEmail.js';
 import { updateAnnexe21AfterSignature } from '../operations/updateAnnexe21AfterSignature.js';
 import { getClientIp } from '../common/getClientIp.js';
+import { determineRangConsommateur } from './determineRangConsommateur.js';
+
 
 export const handleGenerateContrat = async (req, res) => {
   const { contrat_id, consommateur_id, producteur_id, installation_id } = req.body;
@@ -100,7 +102,7 @@ export const handleGenerateContrat = async (req, res) => {
 
     // 🧮 Détermination du rang consommateur pour ce producteur
     try {
-      const { determineRangConsommateur } = await import('./determineRangConsommateur.js');
+      console.log('🔢 Détermination du rang consommateur...');
       const rang = await determineRangConsommateur(producteur_id, contrat_id);
       console.log(`✅ Rang consommateur déterminé et mis à jour : ${rang}`);
     } catch (err) {
