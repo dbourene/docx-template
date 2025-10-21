@@ -14,7 +14,7 @@ export const determineRangConsommateur = async (producteur_id, contrat_id) => {
   if (error) throw new Error('Erreur lors du comptage des contrats : ' + error.message);
 
   // 2️⃣ Calcul du rang
-  const rang = (existingContracts?.length || 0) + 1;
+  const rang = (existingContracts?.length || 0);
 
   // 3️⃣ Mise à jour du contrat courant
   const { error: updateError } = await supabase
