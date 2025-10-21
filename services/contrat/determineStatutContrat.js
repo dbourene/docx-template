@@ -1,3 +1,6 @@
+// services/contrat/determineStatutContrat.js
+// Détermine le statut d'un contrat en fonction des signatures et du type de consommateur
+
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();

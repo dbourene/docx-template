@@ -90,13 +90,22 @@ export const handleGenerateContrat = async (req, res) => {
     const bucket = 'contrats'; // <-- nom correct du bucket
     const { publicUrl, fullPath } = await uploadToSupabase(signedPdfPath, supabasePath, bucket);
 
-    // Étape 6 : Mise à jour BDD
+    // Étape 6 : Mise à jour de la table contrats
     const statut = await determineStatutContrat(contrat_id);
     await updateContratInDatabase(contrat_id, {
       statut,
       url_document: publicUrl,
       consommateur_IP: ip,
     });
+
+    // 🧮 Détermination du rang consommateur pour ce producteur
+    try {
+      const { determineRangConsommateur } = await import('./determineRangConsommateur.js');
+      const rang = await determineRangConsommateur(producteur_id, contrat_id);
+      console.log(`✅ Rang consommateur déterminé et mis à jour : ${rang}`);
+    } catch (err) {
+      console.error('⚠️ Erreur lors de la détermination du rang consommateur :', err);
+    }
 
     // 🔄 Mise à jour du fichier annexe21 lié à l'opération
     try {
