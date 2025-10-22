@@ -285,7 +285,7 @@ export const handleSignatureProducteur = async (req, res) => {
 
   const now = new Date().toISOString();
 
-  // Étape 8 : Calcul du nouveau statut
+  // Étape 8 : Calcul du nouveau statut du contrat
   let nouveauStatut;
   try {
     console.log('🧠 Étape 8 : Calcul du nouveau statut...');
@@ -323,57 +323,40 @@ export const handleSignatureProducteur = async (req, res) => {
 
     console.log('✅ Contrat mis à jour en BDD pour le producteur');
 
-    // Étape 10 : Mise à jour de la dénommination du fichier annexe 21
+    
+    // Étape 10 : Intégration du consommateur à l'opération (avant ou après mise en service)
     try {
-      console.log(`📄 Lancement de la mise à jour de l'annexe 21 pour le contrat ${contrat_id}...`);
-      await updateAnnexe21AfterSignature(contrat_id);
-      console.log(`✅ Annexe 21 mise à jour avec succès pour le contrat ${contrat_id}`);
+      console.log(`⚙️ Détermination du type d'opération pour le contrat ${contrat_id}...`);
+
+      // On récupère l'opération liée au contrat pour vérifier son statut
+      const { data: operationData, error: opError } = await supabase
+        .from('operations')
+        .select('id, statut')
+        .eq('producteur_id', producteur.id)
+        .single();
+
+      if (opError) {
+        console.warn(`⚠️ Aucune opération trouvée pour le producteur ${producteur.id}, cas considéré comme "avant mise en service"`);
+      }
+
+      const operationStatut = operationData?.statut || 0;
+
+      if (operationStatut < 6) {
+        console.log('🟢 Cas 1 : Opération avant mise en service – génération et envoi de l’annexe 21.');
+        const { handleIntegrationAvantMiseEnService } = await import('../operations/handleIntegrationAvantMiseEnService.js');
+        await handleIntegrationAvantMiseEnService(contrat_id);
+      } else {
+        console.log('🟣 Cas 2 : Opération déjà en service – intégration du consommateur via Enedis API.');
+        const { handleIntegrationApresMiseEnService } = await import('../operations/handleIntegrationApresMiseEnService.js');
+        await handleIntegrationApresMiseEnService(contrat_id);
+      }
+
+      console.log(`✅ Intégration du consommateur traitée pour le contrat ${contrat_id}.`);
     } catch (error) {
-    console.error(`❌ Erreur lors de la mise à jour de l'annexe 21 pour le contrat ${contrat_id} :`, error);
+      console.error(`❌ Erreur lors du traitement d’intégration pour le contrat ${contrat_id} :`, error);
     }
-
-    // Étape 11 : Envoi de l'annexe 21 à ENEDIS ou de l'email de notification
-    try {
-      console.log(`📨 Envoi de l'annexe 21 ou notification pour le contrat ${contrat_id}...`);
-      await sendAnnexe21OrNotification(contrat_id);
-      console.log(`✅ Annexe 21 ou notification envoyée pour le contrat ${contrat_id}`);
-    } catch (error) {
-      console.error(`❌ Erreur lors de l'envoi de l'annexe 21 ou de la notification pour le contrat ${contrat_id} :`, error);
-    }
-
-    // Étape 12 : Envoi de l'email de notification
-    // Récupération du prénom du consommateur pour personnaliser l'email
-    const consommateurInfo = await getUserInfo(consommateur_id);
-
-    if (!consommateurInfo || consommateurInfo.role !== 'consommateur') {
-      throw new Error("Impossible de récupérer les informations du consommateur");
-    }
-
-    // Création du message de notification au consommateur
-  
-    console.log('✅ Informations du consommateur récupérées:', consommateurInfo);
-
-    const emailSubject = `Contrat de vente d'énergie locale signé par ${producteur.contact_prenom || 'un producteur'} ${producteur.contact_nom || ''}`;
-    const emailHtml = `
-      <p>Bonjour ${consommateurInfo.prenom},</p>
-      <p>Le contrat de vente d'énergie locale a été signé par ${producteur.contact_prenom} ${producteur.contact_nom}.</p>
-      <p>Il prendra effet au plus tard dans 15 jours (si vous avez refusé le délai légal de rétractation), dans 30 jours (si vous avez accepté le délai légal de rétractation).</p>
-      <p>Vous serez informé prochainement par email de la date définitive d'effet du contrat.</p>
-      <p>Cordialement,</p>
-      <p>L'équipe de Kinjo</p>
-    `;
-
-    console.log('📧 Envoi de l’email de notification à', consommateurInfo.email);
-
-    await sendEmail({
-      from: 'Helioze <onboarding@resend.dev>',// puis remplacer par 'Helioze <no-reply@notifications.helioze.fr>',
-      to: ['dbourene@audencia.com'], // puis remplacer par consommateurInfo.email,
-      subject: emailSubject,
-      html: emailHtml
-    });
-    console.log('✅ Email de notification envoyé au consommateur');
-
-    // Retourner la réponse
+   
+    // ✅ Réponse finale HTTP 200
     return res.status(200).json({
       success: true,
       message: 'Contrat signé par le producteur',
@@ -389,4 +372,5 @@ export const handleSignatureProducteur = async (req, res) => {
     });
   }
 
+ 
 };

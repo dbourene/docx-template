@@ -50,6 +50,34 @@ export async function sendDateDemarrageNotification(operationId) {
       return { success: false, error: `Aucun producteur trouvé pour l'opération ${operationId}` };
     }
     
+    // 🧮 Mise à jour du statut de l'opération selon la date de démarrage
+    try {
+      const now = new Date();
+
+      // Conversion du format "AAAA_MM_JJ" en "AAAA-MM-JJ" pour compatibilité avec new Date()
+      const startDateString = operation.start_date.replace(/_/g, '-');
+      const startDate = new Date(startDateString);
+
+      if (isNaN(startDate)) {
+        console.error(`⚠️ Format de date invalide pour start_date : ${operation.start_date}`);
+      } else {
+        const nouveauStatut = now < startDate ? 5 : 6;
+
+        const { error: updateError } = await supabase
+          .from('operations')
+          .update({ statut: nouveauStatut })
+          .eq('id', operationId);
+
+        if (updateError) {
+          console.error('⚠️ Erreur lors de la mise à jour du statut de l’opération :', updateError);
+        } else {
+          console.log(`✅ Statut de l’opération ${operationId} mis à jour avec la valeur ${nouveauStatut}`);
+        }
+      }
+    } catch (err) {
+      console.error('⚠️ Erreur inattendue lors de la mise à jour du statut de l’opération :', err);
+    }
+
     // 3. Préparation des infos du producteur
     const producteur = operation.producteurs;
     const producteurEmail = producteur.contact_email;
