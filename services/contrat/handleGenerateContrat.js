@@ -1,5 +1,5 @@
 // services/contrat/handleGenerateContrat.js
-// Orchestre le flux de génération d'un contrat CPV
+// Orchestre le flux de génération d'un contrat CPV suite à l'achat par un consommateur.
 // Génère le .docx, le convertit en PDF, le signe, l'upload et met à jour la BDD
 
 import fs from 'fs';

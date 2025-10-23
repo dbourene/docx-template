@@ -189,7 +189,6 @@ export const handleSignatureProducteur = async (req, res) => {
 
   // Étape 5 : Signature du PDF
   try {
-    ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
     console.log('🌐 Adresse IP du client:', ip);
     console.log('✍️ Étape 5 : Signature du PDF...');
     await signPdf(Buffer.from(pdfBuffer), tempPath, {
