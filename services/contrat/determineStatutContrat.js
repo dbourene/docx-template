@@ -39,7 +39,7 @@ export const determineStatutContrat = async (contratId, dateSignatureProducteurO
   
   // Étape 3 : Récupération du renoncement droit de rétractation
   const { data: renoncementData, error: errRenon } = await supabase
-    .from('renoncements_droit_retractation')
+    .from('renoncement_droit_retractation')
     .select('renoncement_retractation')
     .eq('user_id', consommateur.user_id)
     .maybeSingle();
